@@ -25,7 +25,12 @@ module.exports = {
         return Promise.reject(new Error('Password not found in body!'))
       }
 
-      return ctx.call('users.find', { query: { email } })
+      return ctx.call(
+        'users.find',
+        { query: { email } },
+        // @FIXME I must overwrite calledByApi to access user protected fields etc
+        { meta: { calledByApi: false } }
+      )
         .then((results) => {
           const [user] = results
 
@@ -122,6 +127,8 @@ module.exports = {
   methods: {
     checkPasswordMatch(user, password) {
       const { password: hashedPassword, passwordSalt } = user
+
+      this.logger.info(user)
 
       const isPasswordValid = hashedPassword === hashWithSalt(password, passwordSalt)
 
