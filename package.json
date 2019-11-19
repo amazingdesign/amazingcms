@@ -22,8 +22,8 @@
   "author": "AmazingDesign.eu",
   "devDependencies": {
     "eslint": "^5.10.0",
-    "eslint-plugin-jest": "^22.8.0",
-    "eslint-plugin-node": "^9.1.0",
+    "eslint-plugin-jest": "^22.21.0",
+    "eslint-plugin-node": "^9.2.0",
     "jest": "^23.6.0",
     "jest-cli": "^23.6.0",
     "moleculer-repl": "^0.6.1"
@@ -39,13 +39,13 @@
     "dotenv": "^8.2.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
-    "moleculer": "^0.13.10",
+    "moleculer": "^0.13.11",
     "moleculer-db": "^0.8.2",
     "moleculer-db-adapter-mongo": "^0.4.5",
     "moleculer-json-schema-validator": "^1.0.1",
     "moleculer-mail": "^1.2.3",
     "moleculer-web": "^0.9.0-beta6",
-    "nats": "^1.0.1",
+    "nats": "^1.3.2",
     "sharp": "^0.23.0",
     "slugify": "^1.3.5"
   },
