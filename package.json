@@ -1,0 +1,62 @@
+{
+  "name": "amazingcms",
+  "version": "1.0.0",
+  "description": "Amazing CMS",
+  "scripts": {
+    "dev": "moleculer-runner --env --repl --hot services",
+    "start": "moleculer-runner --env services",
+    "cli": "moleculer connect NATS",
+    "test": "TEST=true jest --watch",
+    "test:all": "TEST=true jest --watchAll",
+    "test:production": "TEST=true jest",
+    "test:coverage": "TEST=true jest --coverage",
+    "fix": "eslint --fix ./services",
+    "dc:up": "docker-compose up --build -d",
+    "dc:down": "docker-compose down"
+  },
+  "keywords": [
+    "microservices",
+    "moleculer",
+    "cms"
+  ],
+  "author": "AmazingDesign.eu",
+  "devDependencies": {
+    "eslint": "^5.10.0",
+    "eslint-plugin-jest": "^22.8.0",
+    "eslint-plugin-node": "^9.1.0",
+    "jest": "^23.6.0",
+    "jest-cli": "^23.6.0",
+    "moleculer-repl": "^0.6.1"
+  },
+  "dependencies": {
+    "@bit/amazingdesign.moleculer.authorizationmixin": "^2.0.0",
+    "@bit/amazingdesign.moleculer.db-metadatamixin": "^1.1.0",
+    "@bit/amazingdesign.moleculer.db-utilsmixin": "^1.1.0",
+    "@bit/amazingdesign.utils.config": "^1.0.0",
+    "@bit/amazingdesign.utils.fastest-validator-schema-checker": "0.0.1",
+    "@bit/amazingdesign.utils.generate-salt": "0.0.1",
+    "@bit/amazingdesign.utils.hash-with-salt": "0.0.1",
+    "dotenv": "^8.2.0",
+    "jsonwebtoken": "^8.5.1",
+    "lodash": "^4.17.15",
+    "moleculer": "^0.13.10",
+    "moleculer-db": "^0.8.2",
+    "moleculer-db-adapter-mongo": "^0.4.5",
+    "moleculer-mail": "^1.2.3",
+    "moleculer-web": "^0.9.0-beta6",
+    "nats": "^1.0.1",
+    "sharp": "^0.23.0",
+    "slugify": "^1.3.5"
+  },
+  "engines": {
+    "node": ">= 8.3.x"
+  },
+  "jest": {
+    "coverageDirectory": "../coverage",
+    "testEnvironment": "node",
+    "rootDir": "./services",
+    "roots": [
+      "../test"
+    ]
+  }
+}
