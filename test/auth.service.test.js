@@ -3,7 +3,7 @@ const jwt = require('jsonwebtoken')
 const hashWithSalt = require('@bit/amazingdesign.utils.hash-with-salt')
 
 const { ServiceBroker } = require('moleculer')
-const AuthService = require('../../services/auth.service')
+const AuthService = require('../services/auth.service')
 
 describe('Test "auth" service', () => {
 

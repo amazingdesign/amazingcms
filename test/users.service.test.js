@@ -1,7 +1,7 @@
 'use strict'
 
 const { ServiceBroker } = require('moleculer')
-const TestService = require('../../services/users.service')
+const TestService = require('../services/users.service')
 
 describe('Test "users" service', () => {
   const broker = new ServiceBroker({ logger: false })
@@ -34,7 +34,9 @@ describe('Test "users" service', () => {
     it('trying to create existing user, should reject an Error', () => {
       return expect(
         broker.call('users.create', { email: TEST_EMAIL, password: TEST_PASS })
-      ).rejects.toThrowError(new Error('Entry with field "email" with value "example-user-create@example.com" already exists!'))
+      ).rejects.toThrowError(
+        new Error('Entry with field "email" with value "example-user-create@example.com" already exists!')
+      )
     })
 
   })

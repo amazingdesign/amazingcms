@@ -1,7 +1,7 @@
 'use strict'
 
 const { ServiceBroker } = require('moleculer')
-const LanguagesService = require('../../services/languages.service')
+const LanguagesService = require('../services/languages.service')
 
 describe('Test "languages" service', () => {
   const TEST_NAME = 'Polski'

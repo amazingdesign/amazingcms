@@ -1,7 +1,7 @@
 'use strict'
 
 const { ServiceBroker } = require('moleculer')
-const CollectionsService = require('../../services/collections.service')
+const CollectionsService = require('../services/collections.service')
 
 describe('Test "collections" service', () => {
   const TEST_NAME = 'test'
@@ -10,8 +10,6 @@ describe('Test "collections" service', () => {
     name: 'name'
   }]
   const TEST_SCHEMA = { name: 'string' }
-  const TEST_INVALID_SCHEMA = { name: { first: 'Ala', last: 'Kota' } }
-  const TEST_CIRCULAR_SCHEMA = { func: () => { } }
 
   const broker = new ServiceBroker({ logger: false })
   broker.createService(CollectionsService)

@@ -1,8 +1,8 @@
 const { ServiceBroker } = require('moleculer')
 
-const CollectionsLoaderService = require('../../services/collections-loader.service')
-const ActionsService = require('../../services/actions.service')
-const CollectionsService = require('../../services/collections.service')
+const CollectionsLoaderService = require('../services/collections-loader.service')
+const ActionsService = require('../services/actions.service')
+const CollectionsService = require('../services/collections.service')
 
 describe('Test "collection-loader" service', () => {
 

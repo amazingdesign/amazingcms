@@ -1,10 +1,10 @@
 const { ServiceBroker } = require('moleculer')
 const { MoleculerError } = require('moleculer').Errors
 
-const CollectionsService = require('../../services/collections.service')
-const CollectionsLoaderService = require('../../services/collections-loader.service')
-const ActionsService = require('../../services/actions.service')
-const LanguagesService = require('../../services/languages.service')
+const CollectionsService = require('../services/collections.service')
+const CollectionsLoaderService = require('../services/collections-loader.service')
+const ActionsService = require('../services/actions.service')
+const LanguagesService = require('../services/languages.service')
 
 describe('Test "actions" service', () => {
   const TEST_PARAMS = { name: 'test-name', id: 'abc' }
