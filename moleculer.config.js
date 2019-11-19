@@ -1,6 +1,7 @@
 'use strict'
 
 const { getConfig } = require('@bit/amazingdesign.utils.config')
+const Validator = require('moleculer-json-schema-validator')
 
 /**
  * Moleculer ServiceBroker configuration file
@@ -117,7 +118,7 @@ module.exports = {
   // Enable parameters validation. More info: https://moleculer.services/docs/0.13/validating.html
   validation: true,
   // Custom Validator class for validation.
-  validator: null,
+  validator: new Validator(),
 
   // Enable metrics function. More info: https://moleculer.services/docs/0.13/metrics.html
   metrics: false,

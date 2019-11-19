@@ -22,8 +22,12 @@ module.exports = {
   settings: {
     fields: ['_id', 'name', 'code'],
     entityValidator: {
-      name: 'string',
-      code: 'string',
+      type: 'object',
+      required: ['name', 'code'],
+      properties: {
+        name: { type: 'string' },
+        code: { type: 'string' },
+      },
     }
   },
 

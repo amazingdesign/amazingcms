@@ -13,13 +13,13 @@ module.exports = {
     DbUtilsMixin
   ],
 
-  hooks: {
-    before: {
-      'create': [
-        'throwWhenNameExists',
-      ],
-    },
-  },
+  // hooks: {
+  //   before: {
+  //     'create': [
+  //       'throwWhenNameExists',
+  //     ],
+  //   },
+  // },
 
   settings: {
     requiredPrivileges: {
@@ -41,44 +41,43 @@ module.exports = {
       'singleton',
     ],
     entityValidator: {
-      name: 'string',
-      displayName: { type: 'string', optional: true },
-      fields: {
-        type: 'array',
-        min: 1,
-        items: {
-          $$strict: true,
-          type: 'object',
-          props: {
-            fieldType: { type: 'string' },
-            name: { type: 'string' },
-            label: { type: 'string', optional: true },
-            props: { type: 'object', optional: true },
-            displayAsTableColumn: { type: 'boolean', optional: true },
-            initialValue: { type: 'any', optional: true },
+      required: ['name', 'fields'],
+      type: 'object',
+      properties: {
+        name: { type: 'string' },
+        displayName: { type: 'string' },
+        fields: {
+          type: 'array',
+          minItems: 1,
+          items: {
+            type: 'object',
+            additionalProperties: false,
+            properties: {
+              fieldType: { type: 'string' },
+              name: { type: 'string' },
+              label: { type: 'string' },
+              props: { type: 'object' },
+              displayAsTableColumn: { type: 'boolean' },
+              initialValue: {},
+            },
           },
         },
-      },
-      validator: {
-        type: 'custom',
-        check: fastestValidatorSchemaChecker,
-        optional: true,
-      },
-      requiredPrivileges: {
-        $$strict: true,
-        type: 'object',
-        props: {
-          count: { type: 'array', items: 'string', optional: true },
-          list: { type: 'array', items: 'string', optional: true },
-          create: { type: 'array', items: 'string', optional: true },
-          insert: { type: 'array', items: 'string', optional: true },
-          get: { type: 'array', items: 'string', optional: true },
-          update: { type: 'array', items: 'string', optional: true },
-          remove: { type: 'array', items: 'string', optional: true },
+        validator: { $ref: 'http://json-schema.org/draft-07/schema#' },
+        requiredPrivileges: {
+          type: 'object',
+          additionalProperties: false,
+          properties: {
+            count: { type: 'array', items: { type: 'string' } },
+            list: { type: 'array', items: { type: 'string' } },
+            create: { type: 'array', items: { type: 'string' } },
+            insert: { type: 'array', items: { type: 'string' } },
+            get: { type: 'array', items: { type: 'string' } },
+            update: { type: 'array', items: { type: 'string' } },
+            remove: { type: 'array', items: { type: 'string' } },
+          },
         },
-        optional: true,
-      },
-      singleton: { type: 'boolean', optional: true }
+        singleton: { type: 'boolean' }
+      }
     },
   },
 

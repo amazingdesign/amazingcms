@@ -43,13 +43,17 @@ module.exports = {
     },
     fields: ['_id', 'email', 'password', 'passwordSalt', 'refreshTokenSalt', 'firstName', 'lastName', 'privileges'],
     entityValidator: {
-      email: 'email',
-      password: { type: 'string', min: 1024, max: 1024 },
-      passwordSalt: { type: 'string', min: 32, max: 32 },
-      refreshTokenSalt: { type: 'string', min: 32, max: 32 },
-      firstName: { type: 'string', optional: true },
-      lastName: { type: 'string', optional: true },
-      privileges: { type: 'array', items: 'string', optional: true }
+      type: 'object',
+      required: ['email', 'password', 'passwordSalt', 'refreshTokenSalt'],
+      properties: {
+        email: { type: 'string', format: 'email' },
+        password: { type: 'string', minLength: 1024, maxLength: 1024 },
+        passwordSalt: { type: 'string', minLength: 32, maxLength: 32 },
+        refreshTokenSalt: { type: 'string', minLength: 32, maxLength: 32 },
+        firstName: { type: 'string' },
+        lastName: { type: 'string' },
+        privileges: { type: 'array', items: { type: 'string' } },
+      }
     }
   },
 
