@@ -27,7 +27,7 @@ module.exports = {
 
       return ctx.call(
         'users.find',
-        { query: { email } },
+        { populate: ['groups'], query: { email } },
         // @FIXME I must overwrite calledByApi to access user protected fields etc
         { meta: { calledByApi: false } }
       )
@@ -138,6 +138,14 @@ module.exports = {
       const secret = getConfigOrFail('SECRET')
       let userFieldsInPayload = null
 
+      const privileges = (
+        user.groups &&
+        user.groups.flatMap &&
+        user.groups
+          .flatMap(group => (group.privileges))
+          .flatMap(privileges => privileges.name)
+      )
+
       try {
         const userFieldsInPayloadString = getConfigOrFail('USER_FIELDS_IN_PAYLOAD')
 
@@ -146,7 +154,10 @@ module.exports = {
         userFieldsInPayload = []
       }
 
-      const payload = _.pick(user, userFieldsInPayload)
+      const payload = {
+        ..._.pick(user, userFieldsInPayload),
+        privileges,
+      }
 
       const options = {
         expiresIn: getConfigOrFail('ACCESS_TOKEN_EXPIRES_IN')
@@ -195,7 +206,7 @@ module.exports = {
 
       if (!userId) return Promise.reject(new Error('No "userId" field in token payload!'))
 
-      return this.broker.call('users.get', { id: userId })
+      return this.broker.call('users.get', { populate: ['groups'], id: userId })
         .then((user) => {
           if (!user) return Promise.reject(new Error('No user find in database!'))
 

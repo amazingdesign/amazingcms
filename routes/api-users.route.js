@@ -11,6 +11,7 @@ module.exports = {
     'users.get',
     'users.create',
     'users.remove',
+    'users.update',
   ],
   bodyParsers: {
     json: true,

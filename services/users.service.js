@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 'use strict'
 
 const DbService = require('../db/main')
@@ -42,42 +43,75 @@ module.exports = {
       remove: ['superadmin'],
       getSchema: ['superadmin'],
     },
-    fields: ['_id', 'email', 'password', 'passwordSalt', 'refreshTokenSalt', 'firstName', 'lastName', 'privileges'],
+    fields: [
+      '_id',
+      'email',
+      'avatar',
+      'password',
+      'passwordSalt',
+      'refreshTokenSalt',
+      'firstName',
+      'lastName',
+      'groups',
+    ]
+    ,
     entityValidator: {
       type: 'object',
       required: ['email', 'password', 'passwordSalt', 'refreshTokenSalt'],
       properties: {
         email: { type: 'string', format: 'email' },
+        avatar: { type: 'string' },
         password: { type: 'string', minLength: 1024, maxLength: 1024 },
         passwordSalt: { type: 'string', minLength: 32, maxLength: 32 },
         refreshTokenSalt: { type: 'string', minLength: 32, maxLength: 32 },
         firstName: { type: 'string' },
         lastName: { type: 'string' },
-        privileges: { type: 'array', items: { type: 'string' } },
+        groups: { type: 'array', items: { type: 'string' } },
       }
+    },
+    populates: {
+      groups: {
+        action: 'groups.get',
+        populate: ['privileges']
+      },
     }
   },
 
   actions: {
-    getSchema(ctx) {
+    async getSchema(ctx) {
       return {
         schema: {
           type: 'object',
           required: ['email'],
           properties: {
-            email: { type: 'string', format: 'email', $comment: JSON.stringify({ displayAsTableColumn: true }) },
-            firstName: { type: 'string', $comment: JSON.stringify({ displayAsTableColumn: true }) },
-            lastName: { type: 'string', $comment: JSON.stringify({ displayAsTableColumn: true }) },
-            privileges: { type: 'array', items: { type: 'string' } },
+            email: { type: 'string', format: 'email' },
+            avatar: { type: 'string', uniforms: { component: 'Base64ImageField' } },
+            password: { type: 'string', uniforms: { type: 'password' } },
+            firstName: { type: 'string' },
+            lastName: { type: 'string' },
+            groups: {
+              type: 'array',
+              items: { type: 'string' },
+              options: await this.createOptionsFromService('groups'),
+              uniforms: { checkboxes: true },
+            },
           }
         },
         icon: 'people',
         displayName: 'Users',
         fields: [
+          { label: 'Avatar', name: 'avatar', displayAsTableColumn: true, columnRenderType: 'avatar' },
           { label: 'E-mail', name: 'email', displayAsTableColumn: true },
+          { label: 'Password', name: 'password', displayAsTableColumn: false },
           { label: 'Name', name: 'firstName', displayAsTableColumn: true },
           { label: 'Last name', name: 'lastName', displayAsTableColumn: true },
-          { label: 'Privileges', name: 'privileges', displayAsTableColumn: true },
+          {
+            label: 'Groups',
+            name: 'groups',
+            displayAsTableColumn: true,
+            columnRenderType: 'chips-lookup',
+            lookup: await this.createLookupFromService('groups'),
+          },
         ],
       }
     },

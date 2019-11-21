@@ -1,16 +1,15 @@
 module.exports = {
   authorization: true,
-  path: '/api/groups',
+  path: '/api/privileges',
   aliases: {
-    'REST /': 'groups',
-    'GET :id': 'groups.get',
+    'REST /': 'privileges',
+    'GET :id': 'privileges.get',
   },
   whitelist: [
-    'groups.list',
-    'groups.find',
-    'groups.get',
-    'groups.create',
-    'groups.update',
+    'privileges.list',
+    'privileges.find',
+    'privileges.get',
+    'privileges.create',
   ],
   bodyParsers: {
     json: true,

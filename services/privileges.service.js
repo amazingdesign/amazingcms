@@ -2,9 +2,9 @@ const DbService = require('../db/main')
 const DbUtilsMixin = require('@bit/amazingdesign.moleculer.db-utilsmixin')
 
 module.exports = {
-  name: 'groups',
+  name: 'privileges',
 
-  collection: 'groups',
+  collection: 'privileges',
 
   mixins: [
     DbService,
@@ -30,47 +30,30 @@ module.exports = {
       remove: ['superadmin'],
       getSchema: ['superadmin'],
     },
-    fields: ['_id', 'name', 'privileges'],
+    fields: ['_id', 'name'],
     entityValidator: {
       type: 'object',
-      required: ['name', 'privileges'],
+      required: ['name'],
       properties: {
         name: { type: 'string' },
-        privileges: { type: 'array', items: { type: 'string' } },
       }
-    },
-    populates: {
-      privileges: 'privileges.get',
     }
   },
 
   actions: {
-    async getSchema(ctx) {
+    getSchema(ctx) {
       return {
         schema: {
           type: 'object',
-          required: ['name', 'privileges'],
+          required: ['name'],
           properties: {
             name: { type: 'string' },
-            privileges: {
-              type: 'array',
-              items: { type: 'string' },
-              options: await this.createOptionsFromService('privileges'),
-              uniforms: { checkboxes: true },
-            },
           }
         },
-        icon: 'people',
-        displayName: 'Groups',
+        icon: 'vpn_key',
+        displayName: 'Privileges',
         fields: [
           { label: 'Name', name: 'name', displayAsTableColumn: true },
-          {
-            label: 'Privileges',
-            name: 'privileges',
-            displayAsTableColumn: true,
-            columnRenderType: 'chips-lookup',
-            lookup: await this.createLookupFromService('privileges'),
-          },
         ],
       }
     },
