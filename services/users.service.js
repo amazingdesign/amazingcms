@@ -40,6 +40,7 @@ module.exports = {
       get: ['superadmin'],
       update: ['superadmin'],
       remove: ['superadmin'],
+      getSchema: ['superadmin'],
     },
     fields: ['_id', 'email', 'password', 'passwordSalt', 'refreshTokenSalt', 'firstName', 'lastName', 'privileges'],
     entityValidator: {
@@ -55,6 +56,25 @@ module.exports = {
         privileges: { type: 'array', items: { type: 'string' } },
       }
     }
+  },
+
+  actions: {
+    getSchema(ctx) {
+      return {
+        schema: {
+          type: 'object',
+          required: ['email'],
+          properties: {
+            email: { type: 'string', format: 'email', $comment: JSON.stringify({ displayAsTableColumn: true }) },
+            firstName: { type: 'string', $comment: JSON.stringify({ displayAsTableColumn: true }) },
+            lastName: { type: 'string', $comment: JSON.stringify({ displayAsTableColumn: true }) },
+            privileges: { type: 'array', items: { type: 'string' } },
+          }
+        },
+        icon: 'people',
+        displayName: 'Users',
+      }
+    },
   },
 
   methods: {

@@ -13,13 +13,13 @@ module.exports = {
     DbUtilsMixin
   ],
 
-  // hooks: {
-  //   before: {
-  //     'create': [
-  //       'throwWhenNameExists',
-  //     ],
-  //   },
-  // },
+  hooks: {
+    before: {
+      'create': [
+        'throwWhenNameExists',
+      ],
+    },
+  },
 
   settings: {
     requiredPrivileges: {
@@ -36,7 +36,7 @@ module.exports = {
       'name',
       'displayName',
       'fields',
-      'validator',
+      'schema',
       'requiredPrivileges',
       'singleton',
     ],
@@ -62,7 +62,7 @@ module.exports = {
             },
           },
         },
-        validator: { $ref: 'http://json-schema.org/draft-07/schema#' },
+        schema: { $ref: 'http://json-schema.org/draft-07/schema#' },
         requiredPrivileges: {
           type: 'object',
           additionalProperties: false,
