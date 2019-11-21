@@ -31,7 +31,6 @@
   "dependencies": {
     "@bit/amazingdesign.moleculer.authorizationmixin": "^2.0.0",
     "@bit/amazingdesign.moleculer.db-metadatamixin": "^1.1.0",
-    "@bit/amazingdesign.moleculer.db-utilsmixin": "^1.1.0",
     "@bit/amazingdesign.utils.config": "^1.0.0",
     "@bit/amazingdesign.utils.fastest-validator-schema-checker": "0.0.1",
     "@bit/amazingdesign.utils.generate-salt": "0.0.1",
@@ -59,5 +58,10 @@
     "roots": [
       "../test"
     ]
+  },
+  "bit": {
+    "env": {},
+    "componentsDefaultDirectory": "components/{name}",
+    "packageManager": "npm"
   }
 }

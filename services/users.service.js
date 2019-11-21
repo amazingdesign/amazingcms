@@ -73,6 +73,12 @@ module.exports = {
         },
         icon: 'people',
         displayName: 'Users',
+        fields: [
+          { label: 'E-mail', name: 'email', displayAsTableColumn: true },
+          { label: 'Name', name: 'firstName', displayAsTableColumn: true },
+          { label: 'Last name', name: 'lastName', displayAsTableColumn: true },
+          { label: 'Privileges', name: 'privileges', displayAsTableColumn: true },
+        ],
       }
     },
   },

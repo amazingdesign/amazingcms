@@ -10,6 +10,7 @@ module.exports = {
     'users.find',
     'users.get',
     'users.create',
+    'users.remove',
   ],
   bodyParsers: {
     json: true,
