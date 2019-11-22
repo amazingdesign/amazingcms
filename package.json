@@ -12,7 +12,8 @@
     "test:coverage": "TEST=true jest --coverage",
     "fix": "eslint --fix ./services",
     "dc:up": "docker-compose up --build -d",
-    "dc:down": "docker-compose down"
+    "dc:down": "docker-compose down",
+    "tunnel": "lt --subdomain amazingcms --port $(grep PORT .env | cut -d '=' -f2)"
   },
   "keywords": [
     "microservices",
@@ -26,6 +27,7 @@
     "eslint-plugin-node": "^9.2.0",
     "jest": "^23.6.0",
     "jest-cli": "^23.6.0",
+    "lt": "^0.3.3",
     "moleculer-repl": "^0.6.1"
   },
   "dependencies": {
@@ -36,7 +38,6 @@
     "@bit/amazingdesign.utils.fastest-validator-schema-checker": "0.0.1",
     "@bit/amazingdesign.utils.generate-salt": "0.0.1",
     "@bit/amazingdesign.utils.hash-with-salt": "0.0.1",
-    "dotenv": "^8.2.0",
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
     "moleculer": "^0.13.11",
@@ -46,6 +47,7 @@
     "moleculer-mail": "^1.2.3",
     "moleculer-web": "^0.9.0-beta6",
     "nats": "^1.3.2",
+    "qs": "^6.9.1",
     "sharp": "^0.23.0",
     "slugify": "^1.3.5"
   },
