@@ -1,5 +1,6 @@
 const { ServiceBroker } = require('moleculer')
 const { MoleculerError } = require('moleculer').Errors
+const Validator = require('moleculer-json-schema-validator')
 
 const CollectionsService = require('../services/collections.service')
 const CollectionsLoaderService = require('../services/collections-loader.service')
@@ -19,7 +20,7 @@ describe('Test "actions" service', () => {
     (ctx) => `${collectionName} was called ${JSON.stringify(ctx.params)}`
   )
 
-  const broker = new ServiceBroker({ logger: false })
+  const broker = new ServiceBroker({ logger: false, validator: new Validator() })
   broker.createService(ActionsService)
   broker.createService(CollectionsService)
   broker.createService(CollectionsLoaderService)

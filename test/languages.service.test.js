@@ -1,13 +1,15 @@
 'use strict'
 
 const { ServiceBroker } = require('moleculer')
+const Validator = require('moleculer-json-schema-validator')
+
 const LanguagesService = require('../services/languages.service')
 
 describe('Test "languages" service', () => {
   const TEST_NAME = 'Polski'
   const TEST_CODE = 'pl'
 
-  const broker = new ServiceBroker({ logger: false })
+  const broker = new ServiceBroker({ logger: false, validator: new Validator() })
   broker.createService(LanguagesService)
 
   beforeAll(() => broker.start())

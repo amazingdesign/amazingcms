@@ -1,4 +1,5 @@
 const { ServiceBroker } = require('moleculer')
+const Validator = require('moleculer-json-schema-validator')
 
 const CollectionsLoaderService = require('../services/collections-loader.service')
 const ActionsService = require('../services/actions.service')
@@ -21,7 +22,7 @@ describe('Test "collection-loader" service', () => {
       return TEST_CALL_OPTIONS
     }
 
-    const broker = new ServiceBroker({ logger: false })
+    const broker = new ServiceBroker({ logger: false, validator: new Validator() })
     broker.createService(ActionsService)
     broker.createService(CollectionsLoaderService)
     broker.createService({
@@ -81,7 +82,7 @@ describe('Test "collection-loader" service', () => {
 
   describe('creating new collections as services', () => {
 
-    const broker = new ServiceBroker({ logger: false })
+    const broker = new ServiceBroker({ logger: false, validator: new Validator() })
     broker.createService(CollectionsLoaderService)
     broker.createService(CollectionsService)
     broker.createService({

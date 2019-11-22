@@ -1,6 +1,8 @@
 'use strict'
 
 const { ServiceBroker } = require('moleculer')
+const Validator = require('moleculer-json-schema-validator')
+
 const CollectionsService = require('../services/collections.service')
 
 describe('Test "collections" service', () => {
@@ -11,7 +13,7 @@ describe('Test "collections" service', () => {
   }]
   const TEST_SCHEMA = { name: 'string' }
 
-  const broker = new ServiceBroker({ logger: false })
+  const broker = new ServiceBroker({ logger: false, validator: new Validator() })
   broker.createService(CollectionsService)
 
   beforeAll(() => broker.start())
@@ -19,12 +21,12 @@ describe('Test "collections" service', () => {
 
   it('should return new collection with at least _id, name, fields and validator', () => {
     return expect(
-      broker.call('collections.create', { name: TEST_NAME, fields: TEST_FIELDS, validator: TEST_SCHEMA })
+      broker.call('collections.create', { name: TEST_NAME, fields: TEST_FIELDS, schema: TEST_SCHEMA })
     ).resolves.toEqual(expect.objectContaining({
       _id: expect.any(String),
       name: expect.any(String),
       fields: expect.any(Array),
-      validator: expect.any(Object),
+      schema: expect.any(Object),
     }))
   })
 
