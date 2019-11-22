@@ -60,7 +60,7 @@ module.exports = {
             },
           }
         },
-        icon: 'people',
+        icon: 'fas fa-users',
         displayName: 'Groups',
         fields: [
           { label: 'Name', name: 'name', displayAsTableColumn: true },

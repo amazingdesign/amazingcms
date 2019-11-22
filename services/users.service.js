@@ -97,7 +97,7 @@ module.exports = {
             },
           }
         },
-        icon: 'people',
+        icon: 'fas fa-user',
         displayName: 'Users',
         fields: [
           { label: 'Avatar', name: 'avatar', displayAsTableColumn: true, columnRenderType: 'avatar' },

@@ -50,7 +50,7 @@ module.exports = {
             name: { type: 'string' },
           }
         },
-        icon: 'vpn_key',
+        icon: 'fas fa-shield-alt',
         displayName: 'Privileges',
         fields: [
           { label: 'Name', name: 'name', displayAsTableColumn: true },
