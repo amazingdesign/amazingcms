@@ -1,0 +1,144 @@
+const DbService = require('../db/main')
+const DbMetadata = require('@bit/amazingdesign.moleculer.db-metadatamixin')
+const DbUtilsMixin = require('@bit/amazingdesign.moleculer.db-utilsmixin')
+
+module.exports = {
+  name: 'orders',
+
+  collection: 'orders',
+
+  mixins: [
+    DbService,
+    DbMetadata,
+    DbUtilsMixin,
+  ],
+
+  hooks: {
+    before: {
+      create: [
+        'addFirstStatus',
+        'calculateOrderTotal'
+      ]
+    },
+  },
+
+  settings: {
+    requiredPrivileges: {
+      count: ['superadmin'],
+      list: ['superadmin'],
+      create: [],
+      insert: ['superadmin'],
+      get: ['superadmin'],
+      update: ['superadmin'],
+      remove: ['$NONE'],
+      getSchema: ['superadmin'],
+    },
+    fields: ['_id', 'createdAt', 'updatedAt', 'buyerEmail', 'basket', 'orderTotal', 'status', 'additionalInfo'],
+    entityValidator: {
+      type: 'object',
+      required: ['basket', 'orderTotal', 'status'],
+      properties: {
+        buyerEmail: { type: 'string', format: 'email' },
+        basket: {
+          type: 'array',
+          items: {
+            type: 'object',
+            required: ['id', 'collectionName'],
+            properties: {
+              id: { type: 'string' },
+              collectionName: { type: 'string' },
+              quantity: { type: 'number' },
+            }
+          },
+        },
+        orderTotal: { type: 'number' },
+        status: {
+          type: 'string',
+          enum: ['created', 'pending', 'paid', 'packed', 'shipped', 'received', 'done'],
+        },
+        additionalInfo: {
+          type: 'object',
+        }
+      }
+    }
+  },
+
+  actions: {
+    async getSchema(ctx) {
+      return {
+        schema: {
+          type: 'object',
+          required: ['basket'],
+          properties: {
+            buyerEmail: { type: 'string', format: 'email' },
+            basket: {
+              type: 'array',
+              items: {
+                type: 'object',
+                required: ['id', 'collectionName'],
+                properties: {
+                  id: { type: 'string' },
+                  collectionName: {
+                    type: 'string',
+                    options: await this.createOptionsFromService('collections', 'displayName', 'name'),
+                  },
+                  quantity: { type: 'number' },
+                }
+              },
+              uniforms: { component: 'ListFieldReorder' }
+            },
+          }
+        },
+        icon: 'fas fa-shopping-basket',
+        displayName: 'Orders',
+        fields: [
+          { label: 'Buyer', name: 'buyerEmail', displayAsTableColumn: true },
+          { label: 'Order total', name: 'orderTotal', displayAsTableColumn: true, columnRenderType: 'currency' },
+          { label: 'Status', name: 'status', displayAsTableColumn: true, columnRenderType: 'chips' },
+          { label: 'Created', name: 'createdAt', displayAsTableColumn: true, columnRenderType: 'date-time' },
+          { label: 'Updated', name: 'updatedAt', displayAsTableColumn: true, columnRenderType: 'date-time' },
+        ]
+      }
+    },
+  },
+
+  methods: {
+    addFirstStatus: (ctx) => {
+      ctx.params.status = 'created'
+      return ctx
+    },
+    calculateOrderTotal(ctx) {
+      const { basket } = ctx.params
+
+      // it will fail on entity validation
+      if (!basket || !Array.isArray(basket)) return ctx
+
+      const basketPromises = basket.map((item) => {
+        const { collectionName, id, quantity } = item
+        // @TODO default lang form settings maybe
+        const language = 'pl'
+
+        return this.broker.call(`${collectionName}__${language}.get`, { id })
+          .then((itemData) => ({ ...itemData, quantity }))
+      })
+
+      const calculateOrderTotalSync = (basket) => basket.reduce(
+        (r, item) => {
+          const priceForItem = (item.quantity ? item.price * item.quantity : item.price) || 0
+
+          return r + priceForItem
+        },
+        0
+      )
+
+      return Promise.all(basketPromises)
+        .then(calculateOrderTotalSync)
+        .then((orderTotal) => {
+          ctx.params.orderTotal = orderTotal
+
+          return ctx
+        })
+    },
+  }
+
+}

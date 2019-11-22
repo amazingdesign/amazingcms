@@ -34,6 +34,7 @@ module.exports = {
       return ctx
     },
     forward(ctx) {
+      // @TODO default lang form settings maybe
       const { collectionName, language = 'pl' } = ctx.meta
       const { rawName: action } = ctx.action
 
