@@ -24,10 +24,4 @@ module.exports = {
       req.connection.socket.remoteAddress
     )
   },
-  // // eslint-disable-next-line max-params
-  // onAfterCall(ctx, route, req, res, data) {
-  //   res.setHeader('Content-Type', 'text/plain')
-   
-  //   return 'TRUE'
-  // },
 }
