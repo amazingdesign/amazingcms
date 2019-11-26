@@ -3,6 +3,8 @@
 const { getConfig } = require('@bit/amazingdesign.utils.config')
 const Validator = require('moleculer-json-schema-validator')
 
+const logger = require('./winston-loggly')
+
 /**
  * Moleculer ServiceBroker configuration file
  * 
@@ -25,7 +27,7 @@ module.exports = {
   nodeID: null,
 
   // Enable/disable logging or use custom logger. More info: https://moleculer.services/docs/0.13/logging.html
-  logger: true,
+  logger: logger,
   // Log level for built-in console logger. Available values: trace, debug, info, warn, error, fatal
   logLevel: 'info',
   // Log formatter for built-in console logger. Available values: default, simple, short. It can be also a `Function`.
