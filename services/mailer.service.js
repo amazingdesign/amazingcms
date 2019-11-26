@@ -3,6 +3,8 @@
 const { getConfigOrFail } = require('@bit/amazingdesign.utils.config')
 const MailerService = require('moleculer-mail')
 
+const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
+
 const SMTP_PORT = getConfigOrFail('SMTP_PORT')
 const SMTP_HOST = getConfigOrFail('SMTP_HOST')
 const SMTP_USER = getConfigOrFail('SMTP_USER')
@@ -11,7 +13,10 @@ const FROM_EMAIL = getConfigOrFail('FROM_EMAIL')
 
 module.exports = {
   name: 'mailer',
-  mixins: [MailerService],
+  mixins: [
+    MailerService,
+    EventDispatcherMixin,
+  ],
   settings: {
     from: FROM_EMAIL,
     transport: {

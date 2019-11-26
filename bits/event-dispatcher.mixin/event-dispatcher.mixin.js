@@ -6,10 +6,16 @@ module.exports = {
   },
 
   methods: {
-    dispatchEvents(ctx, res){
-      const fullActionName = ctx.action.name
+    dispatchEvents(ctx, res) {
+      try {
+        const fullActionName = ctx.action.name
 
-      this.broker.broadcastLocal(fullActionName, res)
+        this.broker.broadcastLocal(fullActionName, res)
+
+        return res
+      } catch (error) {
+        return res
+      }
     },
   },
 }

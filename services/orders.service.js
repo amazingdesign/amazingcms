@@ -1,6 +1,9 @@
+/* eslint-disable max-lines */
 const DbService = require('../db/main')
 const DbMetadata = require('@bit/amazingdesign.moleculer.db-metadatamixin')
 const DbUtilsMixin = require('@bit/amazingdesign.moleculer.db-utilsmixin')
+
+const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
 
 module.exports = {
   name: 'orders',
@@ -11,6 +14,7 @@ module.exports = {
     DbService,
     DbMetadata,
     DbUtilsMixin,
+    EventDispatcherMixin,
   ],
 
   hooks: {

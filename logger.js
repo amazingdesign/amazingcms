@@ -1,3 +1,4 @@
+const util = require('util')
 const { extend } = require('moleculer').Logger
 const winston = require('winston')
 const moment = require('moment')
@@ -32,10 +33,15 @@ const logger = bindings => extend(winston.createLogger({
             }
           }
           const getType = type => getColor(type)(_.padEnd(type.toUpperCase(), 5))
+          const objectPrinter = o => util.inspect(
+            o,
+            { showHidden: false, depth: 2, colors: chalk.enabled, breakLength: Number.POSITIVE_INFINITY }
+          )
 
           const time = chalk.grey(`[${moment(timestamp).format('YYYY-MM-DD HH:mm:ss.SSS')}]`)
+          const displayedMessage = typeof message === 'object' ? objectPrinter(message) : message
 
-          return `${time} ${getType(level)} ${chalk.grey(label.mod)} :\n${message}`
+          return `${time} ${getType(level)} ${chalk.grey(label.mod)} :\n${displayedMessage}`
         }),
       )
     }),

@@ -8,8 +8,12 @@ const { Errors: WebErrors } = require('moleculer-web')
 const { getConfigOrFail } = require('@bit/amazingdesign.utils.config')
 const hashWithSalt = require('@bit/amazingdesign.utils.hash-with-salt')
 
+const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
+
 module.exports = {
   name: 'auth',
+
+  mixins: [EventDispatcherMixin],
 
   actions: {
     register(ctx) {

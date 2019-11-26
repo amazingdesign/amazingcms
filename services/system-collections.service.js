@@ -9,7 +9,15 @@ module.exports = {
     requiredPrivileges: {
       get: ['admin', 'superadmin'],
     },
-    exposedCollections: ['users', 'groups', 'privileges', 'orders']
+    exposedCollections: [
+      'users',
+      'groups',
+      'privileges',
+      'languages',
+      'orders',
+      'events',
+      'events-log',
+    ]
   },
 
   actions: {

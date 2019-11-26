@@ -6,6 +6,8 @@ const slugify = require('slugify')
 const DbService = require('../db/main')
 const DbUtilsMixin = require('@bit/amazingdesign.moleculer.db-utilsmixin')
 
+const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
+
 module.exports = {
   name: 'downloader',
 
@@ -14,6 +16,7 @@ module.exports = {
   mixins: [
     DbService,
     DbUtilsMixin,
+    EventDispatcherMixin,
   ],
 
   settings: {

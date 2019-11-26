@@ -1,6 +1,8 @@
 const DbService = require('../db/main')
 const DbUtilsMixin = require('@bit/amazingdesign.moleculer.db-utilsmixin')
 
+const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
+
 module.exports = {
   name: 'privileges',
 
@@ -8,7 +10,8 @@ module.exports = {
 
   mixins: [
     DbService,
-    DbUtilsMixin
+    DbUtilsMixin,
+    EventDispatcherMixin,
   ],
 
   hooks: {

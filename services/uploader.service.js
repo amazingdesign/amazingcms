@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 'use strict'
 
 const { GridFSBucket, ObjectID } = require('mongodb')
@@ -5,6 +6,8 @@ const sharp = require('sharp')
 
 const DbService = require('../db/main')
 const DbUtilsMixin = require('@bit/amazingdesign.moleculer.db-utilsmixin')
+
+const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
 
 module.exports = {
   name: 'uploader',
@@ -14,6 +17,7 @@ module.exports = {
   mixins: [
     DbService,
     DbUtilsMixin,
+    EventDispatcherMixin,
   ],
 
   settings: {

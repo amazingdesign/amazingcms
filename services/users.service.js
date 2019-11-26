@@ -5,6 +5,8 @@ const DbService = require('../db/main')
 const DbUtilsMixin = require('@bit/amazingdesign.moleculer.db-utilsmixin')
 const generateSalt = require('@bit/amazingdesign.utils.generate-salt')
 
+const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
+
 module.exports = {
   name: 'users',
 
@@ -13,6 +15,7 @@ module.exports = {
   mixins: [
     DbService,
     DbUtilsMixin,
+    EventDispatcherMixin,
   ],
 
   hooks: {

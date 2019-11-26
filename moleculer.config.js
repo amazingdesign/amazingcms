@@ -3,7 +3,7 @@
 const { getConfig } = require('@bit/amazingdesign.utils.config')
 const Validator = require('moleculer-json-schema-validator')
 
-const logger = require('./winston-loggly')
+const logger = require('./logger')
 
 /**
  * Moleculer ServiceBroker configuration file

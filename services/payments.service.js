@@ -3,12 +3,16 @@ const qs = require('qs')
 
 const { getConfigOrFail } = require('@bit/amazingdesign.utils.config')
 
+const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
+
 const API_URL = getConfigOrFail('API_URL')
 
 module.exports = {
   name: 'payments',
 
-  mixins: [],
+  mixins: [
+    EventDispatcherMixin,
+  ],
 
   hooks: {},
 
@@ -23,10 +27,11 @@ module.exports = {
 
   actions: {
     async create(ctx) {
-      const { amount, orderId, method = this.settings.defaultMethod } = ctx.params
+      const { orderId, method = this.settings.defaultMethod } = ctx.params
 
-      if (!amount) throw Error('You must specify amount!')
       if (!orderId) throw Error('You must specify orderId!')
+
+      const { orderTotal: amount } = await this.broker.call('orders.get', { id: orderId })
 
       switch (method) {
         case 'tpay':
@@ -36,8 +41,12 @@ module.exports = {
       }
 
     },
-    verify(ctx) {
-      return this.verifyPaymentByTpay(ctx)
+    async verify(ctx) {
+      const { response, orderId } = this.verifyPaymentByTpay(ctx)
+
+      await this.broker.call('orders.update', { id: orderId, status: 'paid' })
+
+      return response
     }
   },
 
@@ -107,8 +116,8 @@ module.exports = {
       }
 
       const amountFixed = Number(params.tr_amount).toFixed(2)
-      const responseMd5 = this.calculateResponseMd5SumTpay(params.tr_id, amountFixed, params.tr_crc)    
-      if (params.md5sum !== responseMd5){
+      const responseMd5 = this.calculateResponseMd5SumTpay(params.tr_id, amountFixed, params.tr_crc)
+      if (params.md5sum !== responseMd5) {
         throw Error('Received tPay payment verification with invalid checksum!')
       }
 
@@ -118,9 +127,12 @@ module.exports = {
       ctx.meta.$responseHeaders = {
         'Content-Type': contentType,
       }
-      
-      // this is confirmation for tPay server
-      return 'TRUE'
+
+      return {
+        // this is confirmation for tPay server
+        response: 'TRUE',
+        orderId: params.tr_crc,
+      }
     },
   }
 
