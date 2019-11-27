@@ -10,7 +10,7 @@ module.exports = {
       try {
         const fullActionName = ctx.action.name
 
-        this.broker.broadcastLocal(fullActionName, res)
+        this.broker.emit(fullActionName, res)
 
         return res
       } catch (error) {

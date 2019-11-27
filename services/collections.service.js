@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 const DbService = require('../db/main')
 const DbUtilsMixin = require('../bits/db-utilsmixin')
 
@@ -55,14 +56,11 @@ module.exports = {
             type: 'object',
             additionalProperties: false,
             properties: {
-              fieldType: { type: 'string' },
               name: { type: 'string' },
               label: { type: 'string' },
-              props: { type: 'object' },
-              displayAsTableColumn: { type: 'boolean' },
-              initialValue: {},
             },
           },
+          uniforms: { component: 'ListFieldReorder' }
         },
         schema: { $ref: 'http://json-schema.org/draft-07/schema#' },
         requiredPrivileges: {
@@ -95,17 +93,12 @@ module.exports = {
             icon: { type: 'string' },
             tableFields: {
               type: 'array',
-              // minItems: 1,
               items: {
                 type: 'object',
-                // additionalProperties: false,
+                additionalProperties: false,
                 properties: {
-                  fieldType: { type: 'string' },
                   name: { type: 'string' },
                   label: { type: 'string' },
-                  props: { type: 'object', properties: {} },
-                  initialValue: { type: 'string' },
-                  displayAsTableColumn: { type: 'boolean' },
                 },
               },
               uniforms: { component: 'ListFieldReorder' }

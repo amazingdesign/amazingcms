@@ -5,6 +5,18 @@ const { makeCollectionService } = require('../mixins/collection.mixin')
 module.exports = {
   name: 'collections-loader',
 
+  events: {
+    'collections.update': function (payload, nodeId, fullActionName) {
+      const nameOfServiceToReload = payload.name
+
+      this.logger.warn(`Collection ${nameOfServiceToReload} updated! Reloading...`)
+
+      return this.destroyAllCollectionServices(nameOfServiceToReload)
+        .then(() => this.loadCollectionAsService(nameOfServiceToReload))
+        .then(() => this.logger.warn(`Collection ${nameOfServiceToReload} successfully reloaded!`))
+    },
+  },
+
   started() {
     this.broker.waitForServices('collections')
       .then(() => this.broker.call('collections.find'))
@@ -17,14 +29,26 @@ module.exports = {
       return this.loadCollectionAsService(ctx)
     },
     loadCollectionAsService(ctx) {
-      return this.loadCollectionAsService(ctx)
+      const { collectionName } = ctx.params
+      return this.loadCollectionAsService(collectionName)
     }
   },
 
   methods: {
-    loadCollectionAsService(ctx) {
-      const { collectionName } = ctx.params
+    destroyAllCollectionServices(collectionName) {
+      return this.broker.call('languages.find')
+        .then(languagesData => {
+          if (languagesData.length === 0) return Promise.resolve()
 
+          return Promise.all(languagesData.map(languageData => {
+            this.destroyServiceByName(collectionName + '__' + languageData.code)
+          }))
+        })
+    },
+    destroyServiceByName(serviceName) {
+      return this.broker.destroyService(this.broker.getLocalService(serviceName))
+    },
+    loadCollectionAsService(collectionName) {
       return this.broker.call('collections.find', {
         query: {
           name: collectionName,
