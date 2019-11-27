@@ -2,9 +2,11 @@ module.exports = {
   authorization: true,
   path: '/api/payments',
   aliases: {
+    'GET /:orderId': 'payments.create',
     'POST /verify': 'payments.verify',
   },
   whitelist: [
+    'payments.create',
     'payments.verify',
   ],
   bodyParsers: {

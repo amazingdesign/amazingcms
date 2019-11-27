@@ -76,7 +76,7 @@ module.exports = {
           properties: {
             name: { type: 'string' },
             action: { type: 'string' },
-            code: { type: 'string', uniforms: { component: 'LongTextField' } },
+            code: { type: 'string', uniforms: { component: 'MonacoEditorField' } },
           },
         },
         icon: 'fas fa-network-wired',
