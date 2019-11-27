@@ -47,7 +47,7 @@ module.exports = {
         },
         icon: 'fas fa-language',
         displayName: 'Languages',
-        fields: [
+        tableFields: [
           { label: 'Name', name: 'name', displayAsTableColumn: true },
           { label: 'Code', name: 'code', displayAsTableColumn: true },
         ],

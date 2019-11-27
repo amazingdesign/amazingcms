@@ -3,6 +3,7 @@ module.exports = {
   path: '/api',
   aliases: {
     'REST collections': 'collections',
+    'PUT collections/:id': 'collections.update',
   },
   whitelist: [
     'collections.*',

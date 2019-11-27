@@ -17,6 +17,7 @@ module.exports = {
       'orders',
       'events',
       'events-log',
+      'collections',
     ]
   },
 

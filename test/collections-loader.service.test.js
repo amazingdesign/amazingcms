@@ -41,10 +41,12 @@ describe('Test "collection-loader" service', () => {
         find() {
           return Promise.resolve(TEST_SERVICES_NAMES.map(name => ({
             name,
-            fields: [{
-              fieldType: 'text-field',
-              name: 'name'
-            }],
+            schema: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' }
+              }
+            },
           })))
         }
       }
@@ -104,11 +106,12 @@ describe('Test "collection-loader" service', () => {
 
       return broker.call('collections.create', {
         name: 'createdcollection',
-        fields: [{
-          fieldType: 'text-field',
-          name: 'name'
-        }],
-        validator: { name: 'string' }
+        schema: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' }
+          }
+        }
       })
         .then(() => broker.call('collections-loader.loadCollectionAsService', { collectionName: 'createdcollection' }))
         .then(() => broker.call('createdcollection__pl.find')

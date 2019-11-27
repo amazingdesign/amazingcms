@@ -12,11 +12,13 @@
       "cwd": "${workspaceRoot}",
       "args": [
         "--hot",
-        "--env",
+        "--envfile",
+        ".env",
         "services"
       ],
       "skipFiles": [
         "node_modules/**/*.js",
+        "timers.js",
         "async_hooks.js",
         "inspector_async_hook.js"
       ]

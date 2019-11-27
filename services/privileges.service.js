@@ -55,7 +55,7 @@ module.exports = {
         },
         icon: 'fas fa-shield-alt',
         displayName: 'Privileges',
-        fields: [
+        tableFields: [
           { label: 'Name', name: 'name', displayAsTableColumn: true },
         ],
       }

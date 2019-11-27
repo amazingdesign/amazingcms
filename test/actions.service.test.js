@@ -41,10 +41,12 @@ describe('Test "actions" service', () => {
       .then(() => broker.call('languages.create', { name: 'Polski', code: 'pl' }))
       .then(() => broker.call('collections.create', {
         name: 'dynamically-created-service',
-        fields: [ {
-          fieldType: 'text-field',
-          name: 'name'
-        } ],
+        schema: {
+          type: 'object',
+          properties: {
+            name: { type: 'string' }
+          }
+        },
         validator: { name: 'string' }
       }))
   })

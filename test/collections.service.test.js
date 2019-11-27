@@ -8,10 +8,10 @@ const CollectionsService = require('../services/collections.service')
 describe('Test "collections" service', () => {
   const TEST_NAME = 'test'
   const TEST_FIELDS = [{
-    fieldType: 'text-field',
-    name: 'name'
+    name: 'name',
+    label: 'Name',
   }]
-  const TEST_SCHEMA = { name: 'string' }
+  const TEST_SCHEMA = { type: 'object', properties: { name: { type: 'string' } } }
 
   const broker = new ServiceBroker({ logger: false, validator: new Validator() })
   broker.createService(CollectionsService)
@@ -19,13 +19,13 @@ describe('Test "collections" service', () => {
   beforeAll(() => broker.start())
   afterAll(() => broker.stop())
 
-  it('should return new collection with at least _id, name, fields and validator', () => {
+  it('should return new collection with at least _id, name, tableFields and validator', () => {
     return expect(
-      broker.call('collections.create', { name: TEST_NAME, fields: TEST_FIELDS, schema: TEST_SCHEMA })
+      broker.call('collections.create', { name: TEST_NAME, tableFields: TEST_FIELDS, schema: TEST_SCHEMA })
     ).resolves.toEqual(expect.objectContaining({
       _id: expect.any(String),
       name: expect.any(String),
-      fields: expect.any(Array),
+      tableFields: expect.any(Array),
       schema: expect.any(Object),
     }))
   })
@@ -36,7 +36,7 @@ describe('Test "collections" service', () => {
 
   it('trying to create existing collection name, should reject an Error', () => {
     return expect(
-      broker.call('collections.create', { name: TEST_NAME, fields: TEST_FIELDS, validator: TEST_SCHEMA })
+      broker.call('collections.create', { name: TEST_NAME, tableFields: TEST_FIELDS, validator: TEST_SCHEMA })
     ).rejects.toThrowError(new Error('Entry with field "name" with value "test" already exists!'))
   })
 })

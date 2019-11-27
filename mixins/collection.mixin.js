@@ -5,7 +5,7 @@ const DbUtilsMixin = require('../bits/db-utilsmixin')
 const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
 
 const makeCollectionService = collectionData => {
-  const fieldsNames = collectionData.fields.map(field => field.name)
+  const fieldsNames = Object.keys(collectionData.schema.properties)
 
   return {
     name: collectionData.name,

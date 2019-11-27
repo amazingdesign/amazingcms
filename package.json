@@ -44,7 +44,7 @@
     "jsonwebtoken": "^8.5.1",
     "lodash": "^4.17.15",
     "moleculer": "^0.13.11",
-    "moleculer-db": "^0.8.2",
+    "moleculer-db": "^0.8.4",
     "moleculer-db-adapter-mongo": "^0.4.5",
     "moleculer-json-schema-validator": "^1.0.1",
     "moleculer-mail": "^1.2.3",

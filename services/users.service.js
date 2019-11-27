@@ -102,7 +102,7 @@ module.exports = {
         },
         icon: 'fas fa-user',
         displayName: 'Users',
-        fields: [
+        tableFields: [
           { label: 'Avatar', name: 'avatar', displayAsTableColumn: true, columnRenderType: 'avatar' },
           { label: 'E-mail', name: 'email', displayAsTableColumn: true },
           { label: 'Password', name: 'password', displayAsTableColumn: false },

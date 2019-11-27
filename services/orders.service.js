@@ -95,7 +95,7 @@ module.exports = {
         },
         icon: 'fas fa-shopping-basket',
         displayName: 'Orders',
-        fields: [
+        tableFields: [
           { label: 'Buyer', name: 'buyerEmail', displayAsTableColumn: true },
           { label: 'Order total', name: 'orderTotal', displayAsTableColumn: true, columnRenderType: 'currency' },
           { label: 'Status', name: 'status', displayAsTableColumn: true, columnRenderType: 'chips' },

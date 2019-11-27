@@ -36,20 +36,19 @@ module.exports = {
       '_id',
       'name',
       'displayName',
-      'fields',
+      'tableFields',
       'schema',
       'requiredPrivileges',
       'singleton',
     ],
     entityValidator: {
-      required: ['name', 'fields'],
+      required: ['name', 'tableFields'],
       type: 'object',
       properties: {
         name: { type: 'string' },
         displayName: { type: 'string' },
-        fields: {
+        tableFields: {
           type: 'array',
-          minItems: 1,
           items: {
             type: 'object',
             additionalProperties: false,
@@ -78,6 +77,66 @@ module.exports = {
           },
         },
         singleton: { type: 'boolean' }
+      }
+    },
+  },
+
+  actions: {
+    async getSchema(ctx) {
+      return {
+        schema: {
+          required: ['name', 'tableFields'],
+          type: 'object',
+          properties: {
+            name: { type: 'string' },
+            displayName: { type: 'string' },
+            tableFields: {
+              type: 'array',
+              // minItems: 1,
+              items: {
+                type: 'object',
+                // additionalProperties: false,
+                properties: {
+                  fieldType: { type: 'string' },
+                  name: { type: 'string' },
+                  label: { type: 'string' },
+                  props: { type: 'object', properties: {} },
+                  initialValue: { type: 'string' },
+                  displayAsTableColumn: { type: 'boolean' },
+                },
+              },
+              uniforms: { component: 'ListFieldReorder' }
+            },
+            schema: { type: 'object', properties: {}, uniforms: { component: 'MonacoEditorField', language: 'json' } },
+            requiredPrivileges: {
+              type: 'object',
+              additionalProperties: false,
+              properties: {
+                count: { $ref: '#/definitions/privileges' },
+                list: { $ref: '#/definitions/privileges' },
+                create: { $ref: '#/definitions/privileges' },
+                insert: { $ref: '#/definitions/privileges' },
+                get: { $ref: '#/definitions/privileges' },
+                update: { $ref: '#/definitions/privileges' },
+                remove: { $ref: '#/definitions/privileges' },
+              },
+            },
+            singleton: { type: 'boolean' }
+          },
+          definitions: {
+            privileges: {
+              type: 'array',
+              items: { type: 'string' },
+              options: await this.createOptionsFromService('privileges', 'name', 'name'),
+              uniforms: { checkboxes: true },
+            }
+          }
+        },
+        icon: 'fas fa-database',
+        displayName: 'Collections',
+        tableFields: [
+          { label: 'Name', name: 'name', displayAsTableColumn: true },
+        ]
       }
     },
   },

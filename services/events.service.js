@@ -81,7 +81,7 @@ module.exports = {
         },
         icon: 'fas fa-network-wired',
         displayName: 'Events',
-        fields: [
+        tableFields: [
           { label: 'Name', name: 'name', displayAsTableColumn: true },
           { label: 'Action', name: 'action', displayAsTableColumn: true },
         ],

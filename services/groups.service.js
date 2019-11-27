@@ -65,7 +65,7 @@ module.exports = {
         },
         icon: 'fas fa-users',
         displayName: 'Groups',
-        fields: [
+        tableFields: [
           { label: 'Name', name: 'name', displayAsTableColumn: true },
           {
             label: 'Privileges',

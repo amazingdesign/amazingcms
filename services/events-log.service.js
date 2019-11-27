@@ -42,11 +42,11 @@ module.exports = {
         },
         icon: 'fas fa-stream',
         displayName: 'Events log',
-        fields: [
+        tableFields: [
           { label: 'Action', name: 'action', displayAsTableColumn: true },
           { label: 'Level', name: 'level', displayAsTableColumn: true },
           { label: 'Message', name: 'message', displayAsTableColumn: true },
-          { label: 'Data', name: 'data', displayAsTableColumn: true },
+          { label: 'Data', name: 'data', displayAsTableColumn: true, columnRenderType: 'stringify' },
         ],
       }
     },
