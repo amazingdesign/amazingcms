@@ -2,7 +2,7 @@ const vm = require('vm')
 
 const DbService = require('../db/main')
 const DbMetadata = require('@bit/amazingdesign.moleculer.db-metadatamixin')
-const DbUtilsMixin = require('@bit/amazingdesign.moleculer.db-utilsmixin')
+const DbUtilsMixin = require('../bits/db-utilsmixin')
 
 const EXCLUDE = ['events-log']
 const MUST_INCLUDE = ['update', 'create']

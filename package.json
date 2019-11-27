@@ -64,7 +64,12 @@
   "jest": {
     "coverageDirectory": "../coverage",
     "testEnvironment": "node",
-    "rootDir": "./"
+    "rootDir": "./",
+    "roots": [
+      "test",
+      "bits",
+      "mixins"
+    ]
   },
   "bit": {
     "env": {

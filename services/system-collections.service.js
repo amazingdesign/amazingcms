@@ -1,4 +1,4 @@
-const DbUtilsMixin = require('@bit/amazingdesign.moleculer.db-utilsmixin')
+const DbUtilsMixin = require('../bits/db-utilsmixin')
 
 module.exports = {
   name: 'system-collections',

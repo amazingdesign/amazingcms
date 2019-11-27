@@ -2,7 +2,7 @@
 'use strict'
 
 const DbService = require('../db/main')
-const DbUtilsMixin = require('@bit/amazingdesign.moleculer.db-utilsmixin')
+const DbUtilsMixin = require('../bits/db-utilsmixin')
 const generateSalt = require('@bit/amazingdesign.utils.generate-salt')
 
 const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')

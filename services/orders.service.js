@@ -1,7 +1,7 @@
 /* eslint-disable max-lines */
 const DbService = require('../db/main')
 const DbMetadata = require('@bit/amazingdesign.moleculer.db-metadatamixin')
-const DbUtilsMixin = require('@bit/amazingdesign.moleculer.db-utilsmixin')
+const DbUtilsMixin = require('../bits/db-utilsmixin')
 
 const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
 
