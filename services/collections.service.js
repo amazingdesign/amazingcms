@@ -36,17 +36,19 @@ module.exports = {
       '_id',
       'name',
       'displayName',
+      'icon',
       'tableFields',
       'schema',
       'requiredPrivileges',
       'singleton',
     ],
     entityValidator: {
-      required: ['name', 'tableFields'],
+      required: ['name', 'schema'],
       type: 'object',
       properties: {
         name: { type: 'string' },
         displayName: { type: 'string' },
+        icon: { type: 'string' },
         tableFields: {
           type: 'array',
           items: {
@@ -90,6 +92,7 @@ module.exports = {
           properties: {
             name: { type: 'string' },
             displayName: { type: 'string' },
+            icon: { type: 'string' },
             tableFields: {
               type: 'array',
               // minItems: 1,
@@ -135,7 +138,8 @@ module.exports = {
         icon: 'fas fa-database',
         displayName: 'Collections',
         tableFields: [
-          { label: 'Name', name: 'name', displayAsTableColumn: true },
+          { label: 'Name', name: 'displayName' },
+          { label: 'System name', name: 'name' },
         ]
       }
     },
