@@ -1,8 +1,20 @@
 /* eslint-disable max-lines */
 const DbService = require('../db/main')
 const DbUtilsMixin = require('../bits/db-utilsmixin')
+const DbMetadata = require('@bit/amazingdesign.moleculer.db-metadatamixin')
 
 const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
+
+const COLUMN_RENDER_TYPES = [
+  'avatar',
+  'chips',
+  'chips-lookup',
+  'date',
+  'date-time',
+  'time-from-now',
+  'currency',
+  'stringify'
+]
 
 module.exports = {
   name: 'collections',
@@ -12,6 +24,7 @@ module.exports = {
   mixins: [
     DbService,
     DbUtilsMixin,
+    DbMetadata,
     EventDispatcherMixin,
   ],
 
@@ -42,6 +55,8 @@ module.exports = {
       'schema',
       'requiredPrivileges',
       'singleton',
+      'createdAt',
+      'updatedAt',
     ],
     entityValidator: {
       required: ['name', 'schema'],
@@ -58,6 +73,7 @@ module.exports = {
             properties: {
               name: { type: 'string' },
               label: { type: 'string' },
+              columnRenderType: { type: 'string', enum: COLUMN_RENDER_TYPES },
             },
           },
           uniforms: { component: 'ListFieldReorder' }
@@ -99,6 +115,7 @@ module.exports = {
                 properties: {
                   name: { type: 'string' },
                   label: { type: 'string' },
+                  columnRenderType: { type: 'string', enum: COLUMN_RENDER_TYPES },
                 },
               },
               uniforms: { component: 'ListFieldReorder' }
@@ -133,6 +150,8 @@ module.exports = {
         tableFields: [
           { label: 'Name', name: 'displayName' },
           { label: 'System name', name: 'name' },
+          { label: 'Created', name: 'createdAt', columnRenderType: 'date-time' },
+          { label: 'Updated', name: 'updatedAt', columnRenderType: 'date-time' },
         ]
       }
     },

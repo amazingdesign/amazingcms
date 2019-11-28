@@ -84,6 +84,8 @@ module.exports = {
         tableFields: [
           { label: 'Name', name: 'name', displayAsTableColumn: true },
           { label: 'Action', name: 'action', displayAsTableColumn: true },
+          { label: 'Created', name: 'createdAt', columnRenderType: 'date-time' },
+          { label: 'Updated', name: 'updatedAt', columnRenderType: 'date-time' },
         ],
       }
     },

@@ -1,5 +1,6 @@
 const DbService = require('../db/main')
 const DbUtilsMixin = require('../bits/db-utilsmixin')
+const DbMetadata = require('@bit/amazingdesign.moleculer.db-metadatamixin')
 
 const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
 
@@ -11,6 +12,7 @@ module.exports = {
   mixins: [
     DbService,
     DbUtilsMixin,
+    DbMetadata,
     EventDispatcherMixin,
   ],
 
@@ -23,7 +25,7 @@ module.exports = {
   },
 
   settings: {
-    fields: ['_id', 'name', 'code'],
+    fields: ['_id', 'name', 'code', 'createdAt', 'updatedAt'],
     entityValidator: {
       type: 'object',
       required: ['name', 'code'],
@@ -50,6 +52,8 @@ module.exports = {
         tableFields: [
           { label: 'Name', name: 'name', displayAsTableColumn: true },
           { label: 'Code', name: 'code', displayAsTableColumn: true },
+          { label: 'Created', name: 'createdAt', columnRenderType: 'date-time' },
+          { label: 'Updated', name: 'updatedAt', columnRenderType: 'date-time' },
         ],
       }
     },

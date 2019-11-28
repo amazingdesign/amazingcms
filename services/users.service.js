@@ -3,6 +3,8 @@
 
 const DbService = require('../db/main')
 const DbUtilsMixin = require('../bits/db-utilsmixin')
+const DbMetadata = require('@bit/amazingdesign.moleculer.db-metadatamixin')
+
 const generateSalt = require('@bit/amazingdesign.utils.generate-salt')
 
 const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
@@ -15,6 +17,7 @@ module.exports = {
   mixins: [
     DbService,
     DbUtilsMixin,
+    DbMetadata,
     EventDispatcherMixin,
   ],
 
@@ -56,6 +59,8 @@ module.exports = {
       'firstName',
       'lastName',
       'groups',
+      'createdAt',
+      'updatedAt',
     ]
     ,
     entityValidator: {
@@ -115,6 +120,8 @@ module.exports = {
             columnRenderType: 'chips-lookup',
             lookup: await this.createLookupFromService('groups'),
           },
+          { label: 'Created', name: 'createdAt', columnRenderType: 'date-time' },
+          { label: 'Updated', name: 'updatedAt', columnRenderType: 'date-time' },
         ],
       }
     },

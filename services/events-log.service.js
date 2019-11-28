@@ -47,6 +47,8 @@ module.exports = {
           { label: 'Level', name: 'level', displayAsTableColumn: true },
           { label: 'Message', name: 'message', displayAsTableColumn: true },
           { label: 'Data', name: 'data', displayAsTableColumn: true, columnRenderType: 'stringify' },
+          { label: 'Created', name: 'createdAt', columnRenderType: 'date-time' },
+          { label: 'Updated', name: 'updatedAt', columnRenderType: 'date-time' },
         ],
       }
     },
