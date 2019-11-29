@@ -17,4 +17,7 @@ module.exports = {
       calledByApi: true,
     }
   },
+  onBeforeCall(ctx, route, req, res) {
+    ctx.meta.raw = req.$params.raw
+  },
 }

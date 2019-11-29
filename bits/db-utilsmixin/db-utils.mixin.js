@@ -260,7 +260,7 @@ module.exports = {
     },
 
     createLookupFromService(serviceName, valueFieldName = 'name', keyFieldName = '_id') {
-      return this.broker.call(`${serviceName}.find`)
+      return this.broker.call(`${serviceName}.find`, {}, { meta: { raw: true } })
         .then((items) => (
           items.reduce(
             (r, item) => ({ ...r, [item[keyFieldName]]: item[valueFieldName] }),
@@ -270,7 +270,7 @@ module.exports = {
     },
 
     createOptionsFromService(serviceName, labelFieldName = 'name', valueFieldName = '_id') {
-      return this.broker.call(`${serviceName}.find`)
+      return this.broker.call(`${serviceName}.find`, {}, { meta: { raw: true } })
         .then((items) => (
           items.map((item) => ({ label: item[labelFieldName], value: item[valueFieldName] }))
         ))

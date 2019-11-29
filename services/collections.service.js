@@ -1,4 +1,7 @@
 /* eslint-disable max-lines */
+const { mapValues } = require('lodash')
+const { resolveNestedPromises } = require('resolve-nested-promises')
+
 const DbService = require('../db/main')
 const DbUtilsMixin = require('../bits/db-utilsmixin')
 const DbMetadata = require('@bit/amazingdesign.moleculer.db-metadatamixin')
@@ -34,6 +37,9 @@ module.exports = {
         'throwWhenNameExists',
       ],
     },
+    after: {
+      '*': 'prepareCollectionsSchema',
+    }
   },
 
   settings: {
@@ -160,6 +166,55 @@ module.exports = {
   methods: {
     throwWhenNameExists(ctx) {
       return this.throwWhenFieldExists('name')(ctx)
+    },
+    async prepareCollectionsSchema(ctx, res) {
+      if(ctx.meta.raw) return res
+
+      const actionName = ctx.action.rawName
+
+      const modifySchemaInSingleItemResponse = (res) => ({
+        ...res,
+        schema: this.prepareCollectionSchema(res.schema)
+      })
+
+      switch (actionName) {
+        case 'find':
+          return resolveNestedPromises(res.map(modifySchemaInSingleItemResponse))
+        case 'list':
+          return resolveNestedPromises({
+            ...res,
+            rows: res.rows.map(modifySchemaInSingleItemResponse)
+          })
+        case 'get':
+          return resolveNestedPromises(modifySchemaInSingleItemResponse(res))
+            .then(result => {
+              return result
+            })
+        default:
+          return res
+      }
+    },
+    prepareCollectionSchema(schema) {
+      const fillSchemaWithOptions = (object) => mapValues(
+        object,
+        (value, key) => {
+          if (typeof value !== 'object') return value
+          if (Array.isArray(value)) return value
+          if (value === null) return value
+
+          if (key !== 'options') return fillSchemaWithOptions(value)
+
+          return this.createOptionsFromService(
+            value.serviceName,
+            value.labelFieldName,
+            value.valueFieldName,
+          )
+        }
+      )
+
+      const schemaFilledWithPromises = fillSchemaWithOptions(schema)
+
+      return schemaFilledWithPromises
     }
   }
 
