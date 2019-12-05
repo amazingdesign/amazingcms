@@ -122,6 +122,12 @@ module.exports = {
                   name: { type: 'string' },
                   label: { type: 'string' },
                   columnRenderType: { type: 'string', enum: COLUMN_RENDER_TYPES },
+                  lookup: {
+                    type: 'object',
+                    properties: {
+                      serviceName: { type: 'string' }
+                    }
+                  }
                 },
               },
               uniforms: { component: 'ListFieldReorder' }
@@ -174,7 +180,8 @@ module.exports = {
 
       const modifySchemaInSingleItemResponse = (res) => ({
         ...res,
-        schema: this.prepareCollectionSchema(res.schema)
+        schema: this.prepareCollectionSchema(res.schema),
+        tableFields: res.tableFields && res.tableFields.map(tableField => this.prepareCollectionSchema(tableField)),
       })
 
       switch (actionName) {
@@ -202,13 +209,24 @@ module.exports = {
           if (Array.isArray(value)) return value
           if (value === null) return value
 
-          if (key !== 'options') return fillSchemaWithOptions(value)
+          switch (key) {
+            case 'options':
+              return this.createOptionsFromService(
+                value.serviceName,
+                value.labelFieldName,
+                value.valueFieldName,
+              )
+            case 'lookup':
+              if (!value.serviceName) return value
 
-          return this.createOptionsFromService(
-            value.serviceName,
-            value.labelFieldName,
-            value.valueFieldName,
-          )
+              return this.createLookupFromService(
+                value.serviceName,
+                value.labelFieldName,
+                value.valueFieldName,
+              )
+            default:
+              return fillSchemaWithOptions(value)
+          }
         }
       )
 
