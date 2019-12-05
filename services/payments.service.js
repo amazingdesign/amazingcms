@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 const crypto = require('crypto')
 const qs = require('qs')
 

@@ -1,0 +1,17 @@
+version: "3.2"
+
+services:
+
+  standalone:
+    build:
+      context: .
+    image: amazingcms
+    container_name: amazingcms-standalone
+    env_file: .env
+    ports:
+      - $PORT:$PORT
+    depends_on:
+      - nats
+
+  nats:
+    image: nats

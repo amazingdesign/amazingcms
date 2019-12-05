@@ -96,11 +96,12 @@ module.exports = {
         icon: 'fas fa-shopping-basket',
         displayName: 'Orders',
         tableFields: [
-          { label: 'Buyer', name: 'buyerEmail', displayAsTableColumn: true },
-          { label: 'Order total', name: 'orderTotal', displayAsTableColumn: true, columnRenderType: 'currency' },
-          { label: 'Status', name: 'status', displayAsTableColumn: true, columnRenderType: 'chips' },
-          { label: 'Created', name: 'createdAt', displayAsTableColumn: true, columnRenderType: 'date-time' },
-          { label: 'Updated', name: 'updatedAt', displayAsTableColumn: true, columnRenderType: 'date-time' },
+          { label: 'Buyer', name: 'buyerEmail' },
+          { label: 'Order total', name: 'orderTotal', columnRenderType: 'currency' },
+          { label: 'Status', name: 'status', columnRenderType: 'chips' },
+          { label: 'ID', name: '_id', columnRenderType: 'chips' },
+          { label: 'Created', name: 'createdAt', columnRenderType: 'date-time' },
+          { label: 'Updated', name: 'updatedAt', columnRenderType: 'date-time' },
         ]
       }
     },

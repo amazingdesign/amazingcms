@@ -80,6 +80,10 @@ module.exports = {
               name: { type: 'string' },
               label: { type: 'string' },
               columnRenderType: { type: 'string', enum: COLUMN_RENDER_TYPES },
+              lookup: {
+                type: 'object',
+                properties: {},
+              }
             },
           },
           uniforms: { component: 'ListFieldReorder' }
