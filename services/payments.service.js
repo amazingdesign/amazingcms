@@ -6,6 +6,10 @@ const { getConfigOrFail } = require('@bit/amazingdesign.utils.config')
 const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
 
 const API_URL = getConfigOrFail('API_URL')
+const PAYMENT_RETURN_URL_SUCCESS = getConfigOrFail('PAYMENT_RETURN_URL_SUCCESS')
+const PAYMENT_RETURN_URL_FAILURE = getConfigOrFail('PAYMENT_RETURN_URL_FAILURE')
+const PAYMENT_TITLE_DEFAULT = getConfigOrFail('PAYMENT_TITLE_DEFAULT')
+const PAYMENT_SELER_NAME_DEFAULT = getConfigOrFail('PAYMENT_SELER_NAME_DEFAULT')
 
 module.exports = {
   name: 'payments',
@@ -17,40 +21,52 @@ module.exports = {
   hooks: {},
 
   settings: {
-    paymentTittle: 'Payment from AmazingCMS',
-    returnURLSuccess: 'https//google.com',
-    returnURLFailure: 'https//google.com',
+    paymentTittle: PAYMENT_TITLE_DEFAULT,
+    returnURLSuccess: PAYMENT_RETURN_URL_SUCCESS,
+    returnURLFailure: PAYMENT_RETURN_URL_FAILURE,
     responseURL: API_URL + '/api/payments/verify',
-    sellerName: 'AmazingCMS',
+    sellerName: PAYMENT_SELER_NAME_DEFAULT,
     defaultMethod: 'tpay',
   },
 
   actions: {
     async create(ctx) {
-      const { orderId, method = this.settings.defaultMethod } = ctx.params
+      const {
+        orderId,
+        method = this.settings.defaultMethod,
+      } = ctx.params
 
       if (!orderId) throw Error('You must specify orderId!')
 
       const { orderTotal: amount } = await this.broker.call('orders.get', { id: orderId })
 
+      if (amount === 0) {
+        await this.makeOrderPaid(orderId)
+
+        return { redirectURL: this.settings.returnURLSuccess }
+      }
+
       switch (method) {
         case 'tpay':
           return this.createPaymentByTpay(amount, orderId)
         default:
-          return { redirectURL: 'xXx' }
+          return { redirectURL: this.settings.returnURLFailure }
       }
 
     },
     async verify(ctx) {
       const { response, orderId } = this.verifyPaymentByTpay(ctx)
 
-      await this.broker.call('orders.update', { id: orderId, status: 'paid' })
+      await this.makeOrderPaid(orderId)
 
       return response
     }
   },
 
   methods: {
+    makeOrderPaid(orderId) {
+      return this.broker.call('orders.update', { id: orderId, status: 'paid' })
+    },
     calculateResponseMd5SumTpay(transactionId, amount, crc) {
       const sellerId = 11092
       const securityCode = 'd07308cf4902a445'
