@@ -10,7 +10,11 @@ const { Errors: WebErrors } = require('moleculer-web')
 module.exports = {
   hooks: {
     before: {
-      '*': ['singletonService', 'privilegeChecker']
+      '*': [
+        'singletonService',
+        'privilegeChecker',
+        'itemPrivilegesChecker'
+      ]
     },
     error: {
       '*': 'singletonOverflowErrorCatcher'
@@ -275,6 +279,97 @@ module.exports = {
           items.map((item) => ({ label: item[labelFieldName], value: item[valueFieldName] }))
         ))
     },
+
+    async itemPrivilegesChecker(ctx) {
+      if (!this.settings.itemPrivileges) return ctx
+
+      if (
+        !Array.isArray(this.settings.itemPrivileges) ||
+        this.settings.itemPrivileges.length === 0
+      ) {
+        this.logger.warn('Service has empty or invalid itemPrivileges! Cant filter!')
+        return ctx
+      }
+
+      this.logger.info('Asked to filter by item privileges')
+
+      const actionName = ctx.action.rawName
+
+      const checkPromises = this.settings.itemPrivileges.map(async ({ privileges, tokenPath, itemPath }) => {
+        const decodedToken = (
+          ctx.meta &&
+          ctx.meta.decodedToken
+        )
+        const privilegesFromToken = (
+          decodedToken &&
+          ctx.meta.decodedToken.privileges
+        ) || []
+
+        // if user do not have certain privileges that causes filter, then skip
+        if (!privileges.find(privilege => privilegesFromToken.includes(privilege))) return
+
+        const addSearchParams = () => {
+          // modify ctx from outer scope
+          ctx.params = ctx.params || {}
+          ctx.params.query = ctx.params.query || {}
+
+          const queryToAdd = { [itemPath]: decodedToken[tokenPath] }
+
+          this.logger.info(`Added ${JSON.stringify(queryToAdd)} to filter query!`)
+
+          ctx.params = {
+            ...ctx.params,
+            query: {
+              ...ctx.params.query,
+              [itemPath]: decodedToken[tokenPath],
+            }
+          }
+        }
+
+        const getItemThenCheckIfFilterAllows = async () => {
+          const id = ctx.params.id
+          const serviceName = ctx.action.name.split('.')[0]
+
+          const item = await this.broker.call(`${serviceName}.get`, { id })
+
+          if (item[itemPath] !== decodedToken[tokenPath]) {
+            const message = `User cant perform that action! Fail on filter rule for ${privileges.join(', ')}!`
+            this.logger.error(message)
+            throw new PrivilegesError(message)
+          }
+        }
+
+        switch (actionName) {
+          case 'find':
+            addSearchParams()
+            break
+          case 'list':
+            addSearchParams()
+            break
+          case 'count':
+            addSearchParams()
+            break
+          case 'get':
+            await getItemThenCheckIfFilterAllows()
+            break
+          case 'update':
+            await getItemThenCheckIfFilterAllows()
+            break
+          case 'remove':
+            await getItemThenCheckIfFilterAllows()
+            break
+          case 'insert':
+            // here is nothing to check - user is creating new
+            break
+          case 'create':
+            // here is nothing to check - user is creating new
+            break
+        }
+      })
+
+      return Promise.all(checkPromises)
+        .then(() => ctx)
+    }
 
   },
 }

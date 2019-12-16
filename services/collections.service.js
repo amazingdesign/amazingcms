@@ -60,6 +60,7 @@ module.exports = {
       'tableFields',
       'schema',
       'requiredPrivileges',
+      'itemPrivileges',
       'singleton',
       'createdAt',
       'updatedAt',
@@ -100,6 +101,17 @@ module.exports = {
             get: { type: 'array', items: { type: 'string' } },
             update: { type: 'array', items: { type: 'string' } },
             remove: { type: 'array', items: { type: 'string' } },
+          },
+        },
+        itemPrivileges: {
+          type: 'array',
+          items: {
+            type: 'object',
+            properties: {
+              privileges: { type: 'array', items: { type: 'string' } },
+              tokenPath: { type: 'string' },
+              itemPath: { type: 'string' },
+            }
           },
         },
         singleton: { type: 'boolean' }
@@ -150,6 +162,18 @@ module.exports = {
                 remove: { $ref: '#/definitions/privileges' },
               },
             },
+            itemPrivileges: {
+              type: 'array',
+              items: {
+                type: 'object',
+                properties: {
+                  privileges: { $ref: '#/definitions/privileges' },
+                  tokenPath: { type: 'string' },
+                  itemPath: { type: 'string' },
+                }
+              },
+              uniforms: { component: 'ListFieldReorder' }
+            },
             singleton: { type: 'boolean' }
           },
           definitions: {
@@ -157,7 +181,7 @@ module.exports = {
               type: 'array',
               items: { type: 'string' },
               options: await this.createOptionsFromService('privileges', 'name', 'name'),
-              uniforms: { checkboxes: true },
+              uniforms: { component: 'MuiReactSelectField' },
             }
           }
         },
@@ -178,7 +202,7 @@ module.exports = {
       return this.throwWhenFieldExists('name')(ctx)
     },
     async prepareCollectionsSchema(ctx, res) {
-      if(ctx.meta.raw) return res
+      if (ctx.meta.raw) return res
 
       const actionName = ctx.action.rawName
 
