@@ -6,10 +6,7 @@ module.exports = {
     'GET :id': 'privileges.get',
   },
   whitelist: [
-    'privileges.list',
-    'privileges.find',
-    'privileges.get',
-    'privileges.create',
+    'privileges.*',
   ],
   bodyParsers: {
     json: true,

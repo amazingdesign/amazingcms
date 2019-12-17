@@ -55,6 +55,7 @@ module.exports = {
           { label: 'Created', name: 'createdAt', columnRenderType: 'date-time' },
           { label: 'Updated', name: 'updatedAt', columnRenderType: 'date-time' },
         ],
+        requiredPrivileges: this.settings.requiredPrivileges,
       }
     },
   },

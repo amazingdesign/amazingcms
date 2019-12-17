@@ -55,6 +55,16 @@ module.exports = {
   ],
 
   settings: {
+    requiredPrivileges: {
+      count: ['superadmin'],
+      list: ['superadmin'],
+      create: ['superadmin'],
+      insert: ['superadmin'],
+      get: ['superadmin'],
+      update: ['superadmin'],
+      remove: ['superadmin'],
+      getSchema: ['superadmin'],
+    },
     fields: ['_id', 'name', 'action', 'code', 'createdAt', 'updatedAt'],
     entityValidator: {
       type: 'object',
@@ -87,6 +97,7 @@ module.exports = {
           { label: 'Created', name: 'createdAt', columnRenderType: 'date-time' },
           { label: 'Updated', name: 'updatedAt', columnRenderType: 'date-time' },
         ],
+        requiredPrivileges: this.settings.requiredPrivileges,
       }
     },
   },

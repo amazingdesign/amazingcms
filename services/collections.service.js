@@ -47,6 +47,7 @@ module.exports = {
       count: ['admin', 'superadmin'],
       get: ['admin', 'superadmin'],
       list: ['admin', 'superadmin'],
+      find: ['admin', 'superadmin'],
       create: ['superadmin'],
       insert: ['superadmin'],
       update: ['superadmin'],
@@ -192,7 +193,8 @@ module.exports = {
           { label: 'System name', name: 'name' },
           { label: 'Created', name: 'createdAt', columnRenderType: 'date-time' },
           { label: 'Updated', name: 'updatedAt', columnRenderType: 'date-time' },
-        ]
+        ],
+        requiredPrivileges: this.settings.requiredPrivileges,
       }
     },
   },

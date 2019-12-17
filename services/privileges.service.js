@@ -31,8 +31,8 @@ module.exports = {
       create: ['superadmin'],
       insert: ['superadmin'],
       get: ['superadmin'],
-      update: ['superadmin'],
-      remove: ['superadmin'],
+      update: ['$NONE'],
+      remove: ['$NONE'],
       getSchema: ['superadmin'],
     },
     fields: ['_id', 'name', 'createdAt', 'updatedAt'],
@@ -62,6 +62,7 @@ module.exports = {
           { label: 'Created', name: 'createdAt', columnRenderType: 'date-time' },
           { label: 'Updated', name: 'updatedAt', columnRenderType: 'date-time' },
         ],
+        requiredPrivileges: this.settings.requiredPrivileges,
       }
     },
   },
