@@ -22,6 +22,7 @@ const makeCollectionService = collectionData => {
     settings: {
       singleton: collectionData.singleton,
       requiredPrivileges: collectionData.requiredPrivileges,
+      itemPrivileges: collectionData.itemPrivileges,
       fields: ['_id', 'createdAt', 'updatedAt'].concat(fieldsNames),
       entityValidator: collectionData.validator
     }
