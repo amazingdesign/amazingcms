@@ -3,6 +3,7 @@ const vm = require('vm')
 const DbService = require('../db/main')
 const DbMetadata = require('@bit/amazingdesign.moleculer.db-metadatamixin')
 const DbUtilsMixin = require('../bits/db-utilsmixin')
+const DbArchiveMixin = require('../bits/db-archive.mixin')
 
 const EXCLUDE = ['events-log']
 const MUST_INCLUDE = ['update', 'create']
@@ -13,6 +14,7 @@ module.exports = {
   collection: 'events',
 
   mixins: [
+    DbArchiveMixin,
     DbService,
     DbMetadata,
     DbUtilsMixin,

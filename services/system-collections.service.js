@@ -18,6 +18,7 @@ module.exports = {
       'events',
       'events-log',
       'collections',
+      'uploader'
     ]
   },
 

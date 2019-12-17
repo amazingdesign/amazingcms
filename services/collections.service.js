@@ -7,6 +7,7 @@ const DbUtilsMixin = require('../bits/db-utilsmixin')
 const DbMetadata = require('@bit/amazingdesign.moleculer.db-metadatamixin')
 
 const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
+const DbArchiveMixin = require('../bits/db-archive.mixin')
 
 const COLUMN_RENDER_TYPES = [
   'avatar',
@@ -25,6 +26,7 @@ module.exports = {
   collection: 'collections',
 
   mixins: [
+    DbArchiveMixin,
     DbService,
     DbUtilsMixin,
     DbMetadata,

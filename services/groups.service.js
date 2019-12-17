@@ -3,6 +3,7 @@ const DbUtilsMixin = require('../bits/db-utilsmixin')
 const DbMetadata = require('@bit/amazingdesign.moleculer.db-metadatamixin')
 
 const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
+const DbArchiveMixin = require('../bits/db-archive.mixin')
 
 module.exports = {
   name: 'groups',
@@ -10,6 +11,7 @@ module.exports = {
   collection: 'groups',
 
   mixins: [
+    DbArchiveMixin,
     DbService,
     DbUtilsMixin,
     DbMetadata,

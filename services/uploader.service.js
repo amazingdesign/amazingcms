@@ -22,15 +22,25 @@ module.exports = {
 
   settings: {
     requiredPrivileges: {
-      create: ['admin', 'superadmin'],
-      getProxy: ['admin', 'superadmin'],
-      listProxy: ['admin', 'superadmin'],
-      removeProxy: ['admin', 'superadmin'],
+      create: ['superadmin'],
+      getProxy: ['superadmin'],
+      listProxy: ['superadmin'],
+      removeProxy: ['superadmin'],
     },
     maxPageSize: Number.MAX_SAFE_INTEGER
   },
 
   actions: {
+    getSchema() {
+      return {
+        requiredPrivileges: {
+          create: this.settings.requiredPrivileges.create,
+          get: this.settings.requiredPrivileges.getProxy,
+          list: this.settings.requiredPrivileges.listProxy,
+          remove: this.settings.requiredPrivileges.removeProxy,
+        },
+      }
+    },
     create(ctx) {
       const {
         filename,

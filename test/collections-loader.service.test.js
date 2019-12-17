@@ -62,7 +62,12 @@ describe('Test "collection-loader" service', () => {
         expect.assertions(5)
 
         return Promise.all([
-          broker.call('actions.list', TEST_PARAMS, makeCallOptions(testServiceName))
+          // @FIXME @HACK have to pass archived query because tests rely on nedb
+          // ant it have unresolved issue with query operators like $ne
+          // which is used when no archived query is passed
+          // https://github.com/louischatriot/nedb/issues?utf8=%E2%9C%93&q=Field+names+cannot+begin+with+the+%24+character
+          broker.call('actions.list', { TEST_PARAMS, query: { _archived: false } }, makeCallOptions(testServiceName))
+            .catch(console.log)
             .then((value) => expect(value).toEqual(expect.anything()))
           ,
           broker.call('actions.create', TEST_PARAMS, makeCallOptions(testServiceName))

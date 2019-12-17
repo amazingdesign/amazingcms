@@ -1,6 +1,7 @@
 const DbService = require('../db/main')
 const DbMetadata = require('@bit/amazingdesign.moleculer.db-metadatamixin')
 const DbUtilsMixin = require('../bits/db-utilsmixin')
+const DbArchiveMixin = require('../bits/db-archive.mixin')
 
 module.exports = {
   name: 'events-log',
@@ -8,6 +9,7 @@ module.exports = {
   collection: 'events-log',
 
   mixins: [
+    DbArchiveMixin,
     DbService,
     DbMetadata,
     DbUtilsMixin,
