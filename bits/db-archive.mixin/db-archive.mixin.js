@@ -1,9 +1,13 @@
 const { Errors: WebErrors } = require('moleculer-web')
+const { mapValues } = require('lodash')
 
 module.exports = {
   hooks: {
     before: {
-      '*': 'defaultDoNotShowArchived',
+      '*': [
+        'defaultDoNotShowArchived',
+        'makeArchivedBoolean'
+      ],
     },
   },
 
@@ -22,6 +26,31 @@ module.exports = {
   },
 
   methods: {
+    makeArchivedBoolean(ctx) {
+      const mapAllStingsToBooleans = (item) => {
+        if (typeof item === 'string') {
+          if (item === 'false') return false
+          if (item === '' || item === 'undefined') return undefined
+
+          return Boolean(item)
+        }
+        if (Array.isArray(item)) return item.map(mapAllStingsToBooleans)
+        if (typeof item === 'object') return mapValues(item, mapAllStingsToBooleans)
+
+        return item
+      }
+      if (
+        ctx.params &&
+        ctx.params.query
+      ) {
+        console.log(ctx.params.query._archived)
+        ctx.params.query._archived = mapAllStingsToBooleans(ctx.params.query._archived)
+        console.log(ctx.params.query._archived)
+      }
+
+
+      return ctx
+    },
     async defaultDoNotShowArchived(ctx) {
       if (ctx.meta && ctx.meta.skipNotShowArchived) return
 
