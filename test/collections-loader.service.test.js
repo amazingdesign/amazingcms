@@ -66,9 +66,13 @@ describe('Test "collection-loader" service', () => {
           // ant it have unresolved issue with query operators like $ne
           // which is used when no archived query is passed
           // https://github.com/louischatriot/nedb/issues?utf8=%E2%9C%93&q=Field+names+cannot+begin+with+the+%24+character
-          broker.call('actions.list', { TEST_PARAMS, query: { _archived: false } }, makeCallOptions(testServiceName))
+          broker.call('actions.list', { ...TEST_PARAMS, query: { _archived: false } }, makeCallOptions(testServiceName))
             .catch(console.log)
             .then((value) => expect(value).toEqual(expect.anything()))
+          ,
+          // eslint-disable-next-line max-len
+          broker.call('actions.remove', { ...TEST_PARAMS, query: { _archived: false } }, makeCallOptions(testServiceName))
+            .catch((error) => expect(error.message).toBe('Entity not found'))
           ,
           broker.call('actions.create', TEST_PARAMS, makeCallOptions(testServiceName))
             .then((value) => expect(value).toEqual(expect.anything()))
@@ -79,8 +83,6 @@ describe('Test "collection-loader" service', () => {
           broker.call('actions.update', TEST_PARAMS, makeCallOptions(testServiceName))
             .catch((error) => expect(error.message).toBe('Entity not found'))
           ,
-          broker.call('actions.remove', TEST_PARAMS, makeCallOptions(testServiceName))
-            .catch((error) => expect(error.message).toBe('Entity not found'))
         ])
       })
     )

@@ -14,13 +14,18 @@ module.exports = {
   actions: {
     remove(ctx) {
       const { params: { id } } = ctx
+      const serviceName = ctx.action.name.split('.')[0]
 
-      return this.actions.get({ id })
+      return this.broker.call(`${serviceName}.get`, { id }, { meta: { skipNotShowArchived: true } })
         .then((item) => (
-          this.actions.update({
-            id: item._id,
-            _archived: Boolean(!item._archived),
-          })
+          this.broker.call(
+            `${serviceName}.update`,
+            {
+              id: item._id,
+              _archived: Boolean(!item._archived),
+            },
+            { meta: { skipNotShowArchived: true } }
+          )
         ))
     },
   },
@@ -43,21 +48,19 @@ module.exports = {
         ctx.params &&
         ctx.params.query
       ) {
-        console.log(ctx.params.query._archived)
         ctx.params.query._archived = mapAllStingsToBooleans(ctx.params.query._archived)
-        console.log(ctx.params.query._archived)
       }
 
 
       return ctx
     },
     async defaultDoNotShowArchived(ctx) {
-      if (ctx.meta && ctx.meta.skipNotShowArchived) return
+      if (ctx.meta && ctx.meta.skipNotShowArchived) return ctx
 
       const actionName = ctx.action.rawName
 
-      const addSearchParams = () => {
-        const notArchivedQuery = { _archived: { $ne: true } }
+      const addSearchParams = (query = { $ne: true }) => {
+        const notArchivedQuery = { _archived: query }
 
         if (!ctx.params) ctx.params = { query: notArchivedQuery }
         if (!ctx.params.query) ctx.params.query = notArchivedQuery
@@ -70,7 +73,10 @@ module.exports = {
 
         const item = await this.broker.call(`${serviceName}.get`, { id }, { meta: { skipNotShowArchived: true } })
 
-        if (item._archived) {
+        // @HACK must check calledByApi because before remove call
+        // is get call (probably by hook in moleculer-db) and it will
+        // fail here when calling remove to unarchive already archived item
+        if (item._archived && ctx.meta.calledByApi) {
           throw new WebErrors.NotFoundError()
         }
       }
@@ -92,7 +98,7 @@ module.exports = {
           await getItemThenCheckIfIsArchived()
           break
         case 'remove':
-          // normal behaviour - first call archives second un-archives
+          addSearchParams({ $in: [true, false, undefined] })
           break
         case 'insert':
           // here is nothing to do - item does not exist
@@ -101,6 +107,8 @@ module.exports = {
           // here is nothing to do - item does not exist
           break
       }
+
+      return ctx
     },
   },
 
