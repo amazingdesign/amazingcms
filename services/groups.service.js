@@ -63,7 +63,7 @@ module.exports = {
               type: 'array',
               items: { type: 'string' },
               options: await this.createOptionsFromService('privileges'),
-              uniforms: { checkboxes: true },
+              uniforms: { component: 'MuiReactSelectField' },
             },
           }
         },
