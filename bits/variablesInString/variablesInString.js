@@ -28,7 +28,21 @@ const replace = (string, replacers) => {
   return stringWithVarsAndDeletedBrackets
 }
 
+const getValuesFromItem = (stringWithPossibleVars, item) => {
+  const varNames = check(stringWithPossibleVars)
+
+  if (varNames.length === 0) return item[stringWithPossibleVars]
+  
+  const replacer = varNames.reduce(
+    (r, varName) => ({...r, [varName]: item[varName]}),
+    {}
+  )
+
+  return replace(stringWithPossibleVars, replacer)
+}
+
 module.exports = {
   check,
-  replace
+  replace,
+  getValuesFromItem,
 }

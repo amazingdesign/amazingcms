@@ -19,7 +19,9 @@ module.exports = {
 
   started() {
     this.broker.waitForServices('collections')
-      .then(() => this.broker.call('collections.find'))
+      // we must pass meta raw here, because we cant prepareCollectionsSchema from collections
+      // that arent loaded yey - they are will be loaded now
+      .then(() => this.broker.call('collections.find', {}, { meta: { raw: true } }))
       .then(collectionsData => collectionsData.map(this.createServiceFromCollectionData))
       .then(collectionsStartPromises => Promise.all(collectionsStartPromises))
   },

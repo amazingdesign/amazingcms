@@ -39,6 +39,7 @@
     "@bit/amazingdesign.utils.fastest-validator-schema-checker": "0.0.1",
     "@bit/amazingdesign.utils.generate-salt": "0.0.1",
     "@bit/amazingdesign.utils.hash-with-salt": "0.0.1",
+    "@bit/amazingdesign.utils.variables-in-string": "0.0.2",
     "chalk": "^3.0.0",
     "dotenv": "^8.2.0",
     "jsonwebtoken": "^8.5.1",

@@ -2,6 +2,7 @@
 'use strict'
 const generateSalt = require('@bit/amazingdesign.utils.generate-salt')
 const hashWithSalt = require('@bit/amazingdesign.utils.hash-with-salt')
+const { getValuesFromItem } = require('@bit/amazingdesign.utils.variables-in-string')
 
 const { MoleculerError } = require('moleculer').Errors
 const { PrivilegesError, SingletonDataOverflow } = require('./db-utils.errors')
@@ -267,16 +268,23 @@ module.exports = {
       return this.broker.call(`${serviceName}.find`, {}, { meta: { raw: true } })
         .then((items) => (
           items.reduce(
-            (r, item) => ({ ...r, [item[keyFieldName]]: item[valueFieldName] }),
+            (r, item) => ({
+              ...r,
+              [getValuesFromItem(keyFieldName, item)]: getValuesFromItem(valueFieldName, item)
+            }),
             {}
           )
         ))
     },
 
     createOptionsFromService(serviceName, labelFieldName = 'name', valueFieldName = '_id') {
+      this.logger.warn(serviceName, labelFieldName)
       return this.broker.call(`${serviceName}.find`, {}, { meta: { raw: true } })
         .then((items) => (
-          items.map((item) => ({ label: item[labelFieldName], value: item[valueFieldName] }))
+          items.map((item) => ({
+            label: getValuesFromItem(labelFieldName, item),
+            value: getValuesFromItem(valueFieldName, item),
+          }))
         ))
     },
 

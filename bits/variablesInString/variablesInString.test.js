@@ -1,4 +1,4 @@
-const { check, replace } = require('./variablesInString')
+const { check, replace, getValuesFromItem } = require('./variablesInString')
 
 describe('Test for variablesInString - check function', () => {
 
@@ -57,6 +57,12 @@ describe('Test for variablesInString - replace function', () => {
   it('should return replaced string if found them', () => {
     expect(
       replace(
+        'name',
+        { name: 'Ala', lastname: 'Kotowicz' }
+      )
+    ).toBe('name')
+    expect(
+      replace(
         'name {{name}} {{lastname}}',
         { name: 'Ala', lastname: 'Kotowicz' }
       )
@@ -87,6 +93,25 @@ describe('Test for variablesInString - replace function', () => {
 
     work well!
     `)
+  })
+
+})
+
+describe('Test for variablesInString - getValuesFromItem function', () => {
+
+  it('should produce right value', () => {
+    const item = {
+      name: 'Ala',
+      lastname: 'Kotowicz',
+      age: 100,
+    }
+
+    expect(getValuesFromItem('name', item)).toBe('Ala')
+    expect(getValuesFromItem('age', item)).toBe(100)
+    expect(getValuesFromItem('My name is {{name}}', item)).toBe('My name is Ala')
+    expect(
+      getValuesFromItem('My name is {{name}} and I am {{age}} years old!', item)
+    ).toBe('My name is Ala and I am 100 years old!')
   })
 
 })
