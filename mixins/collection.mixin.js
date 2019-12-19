@@ -26,7 +26,8 @@ const makeCollectionService = collectionData => {
       requiredPrivileges: collectionData.requiredPrivileges,
       itemPrivileges: collectionData.itemPrivileges,
       fields: ['_id', '_archived', 'createdAt', 'updatedAt'].concat(fieldsNames),
-      entityValidator: collectionData.validator
+      entityValidator: collectionData.validator,
+      maxPageSize: Number.MAX_SAFE_INTEGER,
     }
   }
 }
