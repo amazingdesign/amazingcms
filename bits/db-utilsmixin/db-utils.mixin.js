@@ -5,7 +5,7 @@ const hashWithSalt = require('@bit/amazingdesign.utils.hash-with-salt')
 const filterByPage = require('@bit/amazingdesign.utils.filter-by-page')
 const { getValuesFromItem } = require('@bit/amazingdesign.utils.variables-in-string')
 
-const { pickBy } = require('lodash')
+const _ = require('lodash')
 const { default: sift } = require('sift')
 
 const { MoleculerError } = require('moleculer').Errors
@@ -310,77 +310,103 @@ module.exports = {
 
       const actionName = ctx.action.rawName
 
-      const checkPromises = this.settings.itemPrivileges.map(async ({ privileges, tokenPath, itemPath }) => {
-        const decodedToken = (
-          ctx.meta &&
-          ctx.meta.decodedToken
-        )
-        const privilegesFromToken = (
-          decodedToken &&
-          ctx.meta.decodedToken.privileges
-        ) || []
+      const checkPromises = this.settings.itemPrivileges.map(
+        async ({ privileges, tokenPath, itemPath, queryByPopulation }) => {
+          const decodedToken = (
+            ctx.meta &&
+            ctx.meta.decodedToken
+          )
+          const privilegesFromToken = (
+            decodedToken &&
+            ctx.meta.decodedToken.privileges
+          ) || []
 
-        // if user do not have certain privileges that causes filter, then skip
-        if (!privileges.find(privilege => privilegesFromToken.includes(privilege))) return
+          // if user do not have certain privileges that causes filter, then skip
+          if (!privileges.find(privilege => privilegesFromToken.includes(privilege))) return
 
-        const addSearchParams = () => {
-          // modify ctx from outer scope
-          ctx.params = ctx.params || {}
-          ctx.params.query = ctx.params.query || {}
+          const addSearchParams = () => {
+            // modify ctx from outer scope
+            ctx.params = ctx.params || {}
+            ctx.params.query = ctx.params.query || {}
 
-          const queryToAdd = { [itemPath]: decodedToken[tokenPath] }
+            const queryToAdd = { [itemPath]: _.get(decodedToken, tokenPath) }
 
-          this.logger.info(`Added ${JSON.stringify(queryToAdd)} to filter query!`)
+            this.logger.info(`Added ${JSON.stringify(queryToAdd)} to filter query!`)
 
-          ctx.params = {
-            ...ctx.params,
-            query: {
-              ...ctx.params.query,
-              [itemPath]: decodedToken[tokenPath],
+            const populate = (
+              queryByPopulation ?
+                Object.keys(this.settings.populates || {})
+                :
+                undefined
+            )
+
+            ctx.params = {
+              ...ctx.params,
+              queryByPopulation,
+              populate,
+              query: {
+                ...ctx.params.query,
+                ...queryToAdd,
+              }
             }
           }
-        }
 
-        const getItemThenCheckIfFilterAllows = async () => {
-          const id = ctx.params.id
-          const serviceName = ctx.action.name.split('.')[0]
+          const getItemThenCheckIfFilterAllows = async () => {
+            const id = ctx.params.id
+            const serviceName = ctx.action.name.split('.')[0]
 
-          const item = await this.broker.call(`${serviceName}.get`, { id })
+            const populate = (
+              queryByPopulation ?
+                Object.keys(this.settings.populates || {})
+                :
+                undefined
+            )
 
-          if (item[itemPath] !== decodedToken[tokenPath]) {
-            const message = `User cant perform that action! Fail on filter rule for ${privileges.join(', ')}!`
-            this.logger.error(message)
-            throw new PrivilegesError(message)
+            const item = await this.broker.call(`${serviceName}.get`, { id, populate })
+
+            if (_.get(item, itemPath) !== _.get(decodedToken, tokenPath)) {
+              const message = `User cant perform that action! Fail on filter rule for ${privileges.join(', ')}!`
+              this.logger.error(message)
+              throw new PrivilegesError(message)
+            }
+
+            // add params populate to original call
+            if (actionName === 'get' && queryByPopulation) {
+              ctx.params = {
+                ...ctx.params,
+                populate,
+              }
+            }
+          }
+
+          switch (actionName) {
+            case 'find':
+              addSearchParams()
+              break
+            case 'list':
+              addSearchParams()
+              break
+            case 'count':
+              addSearchParams()
+              break
+            case 'get':
+              await getItemThenCheckIfFilterAllows()
+              break
+            case 'update':
+              await getItemThenCheckIfFilterAllows()
+              break
+            case 'remove':
+              await getItemThenCheckIfFilterAllows()
+              break
+            case 'insert':
+              // here is nothing to check - user is creating new
+              break
+            case 'create':
+              // here is nothing to check - user is creating new
+              break
           }
         }
-
-        switch (actionName) {
-          case 'find':
-            addSearchParams()
-            break
-          case 'list':
-            addSearchParams()
-            break
-          case 'count':
-            addSearchParams()
-            break
-          case 'get':
-            await getItemThenCheckIfFilterAllows()
-            break
-          case 'update':
-            await getItemThenCheckIfFilterAllows()
-            break
-          case 'remove':
-            await getItemThenCheckIfFilterAllows()
-            break
-          case 'insert':
-            // here is nothing to check - user is creating new
-            break
-          case 'create':
-            // here is nothing to check - user is creating new
-            break
-        }
-      })
+      )
 
       return Promise.all(checkPromises)
         .then(() => ctx)
@@ -433,13 +459,13 @@ module.exports = {
 
       const actionName = ctx.action.rawName
       const serviceName = ctx.action.name.split('.')[0]
-      const populateFields = ctx.params.populate
+      const populateFields = ctx.params.populate || []
 
-      const queryWithoutPopulationFields = pickBy(
+      const queryWithoutPopulationFields = _.pickBy(
         ctx.params.query || {},
-        (value, key) => !populateFields.includes(key.split('.')[0])
+        (value, key) => !(populateFields.includes(key.split('.')[0]))
       )
-      const queryWithOnlyPopulationFields = pickBy(
+      const queryWithOnlyPopulationFields = _.pickBy(
         ctx.params.query || {},
         (value, key) => populateFields.includes(key.split('.')[0])
       )

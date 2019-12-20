@@ -94,8 +94,8 @@ module.exports = {
           uniforms: { component: 'ListFieldReorder' }
         },
         schema: { $ref: 'http://json-schema.org/draft-07/schema#' },
-        populateSchema: { 
-          type: 'object', 
+        populateSchema: {
+          type: 'object',
           properties: {}
         },
         requiredPrivileges: {
@@ -119,6 +119,7 @@ module.exports = {
               privileges: { type: 'array', items: { type: 'string' } },
               tokenPath: { type: 'string' },
               itemPath: { type: 'string' },
+              queryByPopulation: { type: 'boolean' }
             }
           },
         },
@@ -157,10 +158,10 @@ module.exports = {
               uniforms: { component: 'ListFieldReorder' }
             },
             schema: { type: 'object', properties: {}, uniforms: { component: 'MonacoEditorField', language: 'json' } },
-            populateSchema: { 
-              type: 'object', 
-              properties: {}, 
-              uniforms: { component: 'MonacoEditorField', language: 'json' } 
+            populateSchema: {
+              type: 'object',
+              properties: {},
+              uniforms: { component: 'MonacoEditorField', language: 'json' }
             },
             requiredPrivileges: {
               type: 'object',
@@ -183,6 +184,7 @@ module.exports = {
                   privileges: { $ref: '#/definitions/privileges' },
                   tokenPath: { type: 'string' },
                   itemPath: { type: 'string' },
+                  queryByPopulation: { type: 'boolean' }
                 }
               },
               uniforms: { component: 'ListFieldReorder' }

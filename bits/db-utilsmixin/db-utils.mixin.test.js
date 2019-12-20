@@ -107,7 +107,30 @@ describe('Test "db-utils" mixin', () => {
         privileges: ['mustbeowner', 'some-other-permission'],
         tokenPath: '_id',
         itemPath: 'owner',
-      }]
+      }],
+    },
+  })
+  broker.createService({
+    name: 'mustbeowner-hello-item-privileges-and-query-by-population',
+    mixins: [DbService, DbUtilsMixin],
+    settings: {
+      requiredPrivileges: {
+        count: ['mustbeowner'],
+        get: ['mustbeowner'],
+        find: ['mustbeowner'],
+        list: ['mustbeowner'],
+        create: ['mustbeowner'],
+        insert: ['mustbeowner'],
+        update: ['mustbeowner'],
+        remove: ['mustbeowner'],
+      },
+      itemPrivileges: [{
+        privileges: ['mustbeowner', 'another-permission'],
+        tokenPath: 'firstName',
+        itemPath: 'owner.firstName',
+        queryByPopulation: true,
+      }],
+      populates: { owner: 'owners.get' }
     },
   })
   broker.createService({
@@ -154,6 +177,14 @@ describe('Test "db-utils" mixin', () => {
       Promise.resolve()
     )
   }
+  const makeItemsInMustBeOwnerAndQueryByPopulationService = () => {
+    const createItem = (item) => broker.call('mustbeowner-hello-item-privileges-and-query-by-population.create', item)
+
+    return MUST_BE_OWNER_TEST_ITEMS.reduce(
+      (r, item) => r.then(() => createItem(item)),
+      Promise.resolve()
+    )
+  }
   const makeItemsInOwnerItemsService = () => {
     const createItem = (item) => broker.call('owner-items.create', item)
 
@@ -191,6 +222,7 @@ describe('Test "db-utils" mixin', () => {
   beforeAll(() => {
     return broker.start()
       .then(() => Promise.all([
+        makeItemsInMustBeOwnerAndQueryByPopulationService(),
         makeItemsInMustBeOwnerService(),
         makeItemsInOwnerItemsService(),
         makeItemsInOwnersService(),
@@ -469,9 +501,10 @@ describe('Test "db-utils" mixin', () => {
         }
       })
     }
-    const createUserPayload = (id, privileges = ['mustbeowner']) => ({
+    const createUserPayload = (id, privileges = ['mustbeowner'], rest) => ({
       _id: id,
       privileges: privileges,
+      ...rest
     })
     const filterIds = (array) => array.map((item) => ({
       ...item,
@@ -495,7 +528,7 @@ describe('Test "db-utils" mixin', () => {
       return mockCallByApiWithPayload(
         'mustbeowner-hello-item-privileges.find',
         { sort: 'order' },
-        createUserPayload(1, [])
+        createUserPayload('1', [])
       )
         .catch((error) => {
           expect(error).toBeInstanceOf(PrivilegesError)
@@ -522,6 +555,25 @@ describe('Test "db-utils" mixin', () => {
         })
     })
 
+    it('returns only records owned by user from filter using queryByPopulation', () => {
+      expect.assertions(1)
+
+      return mockCallByApiWithPayload(
+        'mustbeowner-hello-item-privileges-and-query-by-population.find',
+        { sort: 'order' },
+        createUserPayload('1', ['mustbeowner'], { firstName: 'OwnerFirstName1' })
+      )
+        .then((data) => {
+          const dataWithoutIds = filterIds(data)
+
+          expect(dataWithoutIds).toEqual(
+            MUST_BE_OWNER_TEST_ITEMS
+              .map((item) => ({ ...item, owner: OWNERS.find((owner) => owner._id === item.owner) }))
+              .filter((item) => item.owner.firstName === 'OwnerFirstName1')
+          )
+        })
+    })
+
     it('returns only records owned by user from list', () => {
       const USER_ID = '1'
       expect.assertions(1)
@@ -540,6 +592,26 @@ describe('Test "db-utils" mixin', () => {
         })
     })
 
+    it('returns only records owned by user from list using queryByPopulation', () => {
+      expect.assertions(1)
+
+      return mockCallByApiWithPayload(
+        'mustbeowner-hello-item-privileges-and-query-by-population.list',
+        { sort: 'order' },
+        createUserPayload('1', ['mustbeowner'], { firstName: 'OwnerFirstName1' })
+      )
+        .then((data) => {
+          const dataWithoutIds = filterIds(data.rows)
+
+          expect(dataWithoutIds).toEqual(
+            MUST_BE_OWNER_TEST_ITEMS
+              .map((item) => ({ ...item, owner: OWNERS.find((owner) => owner._id === item.owner) }))
+              .filter((item) => item.owner.firstName === 'OwnerFirstName1')
+              .filter((item, i) => i < 10)
+          )
+        })
+    })
+
     it('returns only records owned by user from list page 2', () => {
       const USER_ID = '1'
       expect.assertions(1)
@@ -554,6 +626,26 @@ describe('Test "db-utils" mixin', () => {
 
           expect(dataWithoutIds).toEqual(
             MUST_BE_OWNER_TEST_ITEMS.filter(item => item.owner === USER_ID).filter((item, i) => i >= 10)
+          )
+        })
+    })
+
+    it('returns only records owned by user from list page 2 using queryByPopulation', () => {
+      expect.assertions(1)
+
+      return mockCallByApiWithPayload(
+        'mustbeowner-hello-item-privileges-and-query-by-population.list',
+        { sort: 'order', pageSize: 10, page: 2 },
+        createUserPayload('1', ['mustbeowner'], { firstName: 'OwnerFirstName1' })
+      )
+        .then((data) => {
+          const dataWithoutIds = filterIds(data.rows)
+
+          expect(dataWithoutIds).toEqual(
+            MUST_BE_OWNER_TEST_ITEMS
+              .map((item) => ({ ...item, owner: OWNERS.find((owner) => owner._id === item.owner) }))
+              .filter((item) => item.owner.firstName === 'OwnerFirstName1')
+              .filter((item, i) => i >= 10)
           )
         })
     })
@@ -604,6 +696,24 @@ describe('Test "db-utils" mixin', () => {
         .then((data) => expect(data).toBe(12))
     })
 
+    it('returns only records owned by user from count using queryByPopulation', () => {
+      expect.assertions(1)
+
+      return mockCallByApiWithPayload(
+        'mustbeowner-hello-item-privileges-and-query-by-population.count',
+        {},
+        createUserPayload('1', ['mustbeowner'], { firstName: 'OwnerFirstName1' })
+      )
+        .then((data) => {
+          expect(data).toBe(
+            MUST_BE_OWNER_TEST_ITEMS
+              .map((item) => ({ ...item, owner: OWNERS.find((owner) => owner._id === item.owner) }))
+              .filter((item) => item.owner.firstName === 'OwnerFirstName1')
+              .length
+          )
+        })
+    })
+
     it('can get own resources', () => {
       const USER_ID = '1'
       const ITEM_NAME = '1 - owned by 1'
@@ -627,6 +737,30 @@ describe('Test "db-utils" mixin', () => {
         })
     })
 
+    it('can get own resources using queryByPopulation', () => {
+      const USER_ID = '1'
+      const ITEM_NAME = '1 - owned by 1'
+      expect.assertions(1)
+
+      return broker.call(
+        'mustbeowner-hello-item-privileges-and-query-by-population.find',
+        { query: { name: ITEM_NAME } }
+      )
+        .then(([item]) => {
+          return mockCallByApiWithPayload(
+            'mustbeowner-hello-item-privileges-and-query-by-population.get',
+            { id: item._id },
+            createUserPayload(USER_ID, ['mustbeowner'], { firstName: 'OwnerFirstName1' })
+          )
+            .then((data) => {
+              expect(data).toEqual({
+                ...item,
+                owner: OWNERS.find((owner) => owner._id === item.owner)
+              })
+            })
+        })
+    })
+
     it('can update own resources', () => {
       const USER_ID = '1'
       const ITEM_NAME = '1 - owned by 1'
@@ -644,6 +778,25 @@ describe('Test "db-utils" mixin', () => {
         })
     })
 
+    it('can update own resources using queryByPopulation', () => {
+      const USER_ID = '1'
+      const ITEM_NAME = '1 - owned by 1'
+      expect.assertions(1)
+
+      return broker.call(
+        'mustbeowner-hello-item-privileges-and-query-by-population.find',
+        { query: { name: ITEM_NAME } }
+      )
+        .then(([item]) => {
+          return mockCallByApiWithPayload(
+            'mustbeowner-hello-item-privileges-and-query-by-population.update',
+            { id: item._id, newParam: 'Ala ma kota' },
+            createUserPayload(USER_ID, ['mustbeowner'], { firstName: 'OwnerFirstName1' })
+          )
+            .then((data) => expect(data).toEqual({ ...item, newParam: 'Ala ma kota' }))
+        })
+    })
+
     it('can remove own resources', () => {
       const USER_ID = '1'
       const ITEM_NAME = '1 - owned by 1'
@@ -656,6 +809,29 @@ describe('Test "db-utils" mixin', () => {
             'mustbeowner-hello-item-privileges.remove',
             { id: item._id },
             createUserPayload(USER_ID)
+          )
+            .then((data) => {
+              // this is response form in memory db
+              // it differs from mongo, which returns removed object
+              expect(data).toEqual(1)
+            })
+        })
+    })
+
+    it('can remove own resources using queryByPopulation', () => {
+      const USER_ID = '1'
+      const ITEM_NAME = '1 - owned by 1'
+      expect.assertions(1)
+
+      return broker.call(
+        'mustbeowner-hello-item-privileges-and-query-by-population.find',
+        { query: { name: ITEM_NAME } }
+      )
+        .then(([item]) => {
+          return mockCallByApiWithPayload(
+            'mustbeowner-hello-item-privileges-and-query-by-population.remove',
+            { id: item._id, newParam: 'Ala ma kota' },
+            createUserPayload(USER_ID, ['mustbeowner'], { firstName: 'OwnerFirstName1' })
           )
             .then((data) => {
               // this is response form in memory db
@@ -686,6 +862,29 @@ describe('Test "db-utils" mixin', () => {
         })
     })
 
+    it('cant get someone else resources using queryByPopulation', () => {
+      const USER_ID = '1'
+      const ITEM_NAME = '7 - owned by 4'
+      expect.assertions(2)
+
+      return broker.call(
+        'mustbeowner-hello-item-privileges-and-query-by-population.find',
+        { query: { name: ITEM_NAME } }
+      )
+        .then(([item]) => {
+          return mockCallByApiWithPayload(
+            'mustbeowner-hello-item-privileges-and-query-by-population.get',
+            { id: item._id },
+            createUserPayload(USER_ID, ['mustbeowner'], { firstName: 'OwnerFirstName1' })
+          )
+            .catch((error) => {
+              expect(error).toBeInstanceOf(MoleculerError)
+              // eslint-disable-next-line max-len
+              expect(error.message).toBe('User cant perform that action! Fail on filter rule for mustbeowner, another-permission!')
+            })
+        })
+    })
+
     it('cant update someone else resources', () => {
       const USER_ID = '1'
       const ITEM_NAME = '7 - owned by 4'
@@ -707,6 +906,29 @@ describe('Test "db-utils" mixin', () => {
         })
     })
 
+    it('cant update someone else resources using queryByPopulation', () => {
+      const USER_ID = '1'
+      const ITEM_NAME = '7 - owned by 4'
+      expect.assertions(2)
+
+      return broker.call(
+        'mustbeowner-hello-item-privileges-and-query-by-population.find',
+        { query: { name: ITEM_NAME } }
+      )
+        .then(([item]) => {
+          return mockCallByApiWithPayload(
+            'mustbeowner-hello-item-privileges-and-query-by-population.update',
+            { id: item._id },
+            createUserPayload(USER_ID, ['mustbeowner'], { firstName: 'OwnerFirstName1' })
+          )
+            .catch((error) => {
+              expect(error).toBeInstanceOf(MoleculerError)
+              // eslint-disable-next-line max-len
+              expect(error.message).toBe('User cant perform that action! Fail on filter rule for mustbeowner, another-permission!')
+            })
+        })
+    })
+
     it('cant remove someone else resources', () => {
       const USER_ID = '1'
       const ITEM_NAME = '7 - owned by 4'
@@ -724,6 +946,29 @@ describe('Test "db-utils" mixin', () => {
               expect(error).toBeInstanceOf(MoleculerError)
               // eslint-disable-next-line max-len
               expect(error.message).toBe('User cant perform that action! Fail on filter rule for mustbeowner, some-other-permission!')
+            })
+        })
+    })
+
+    it('cant remove someone else resources using queryByPopulation', () => {
+      const USER_ID = '1'
+      const ITEM_NAME = '7 - owned by 4'
+      expect.assertions(2)
+
+      return broker.call(
+        'mustbeowner-hello-item-privileges-and-query-by-population.find',
+        { query: { name: ITEM_NAME } }
+      )
+        .then(([item]) => {
+          return mockCallByApiWithPayload(
+            'mustbeowner-hello-item-privileges-and-query-by-population.remove',
+            { id: item._id },
+            createUserPayload(USER_ID, ['mustbeowner'], { firstName: 'OwnerFirstName1' })
+          )
+            .catch((error) => {
+              expect(error).toBeInstanceOf(MoleculerError)
+              // eslint-disable-next-line max-len
+              expect(error.message).toBe('User cant perform that action! Fail on filter rule for mustbeowner, another-permission!')
             })
         })
     })
