@@ -8,6 +8,9 @@ const DbArchiveMixin = require('../bits/db-archive.mixin')
 const makeCollectionService = collectionData => {
   const fieldsNames = Object.keys(collectionData.schema.properties)
 
+  console.log(collectionData.name)
+  console.log(collectionData.populateSchema)
+
   return {
     name: collectionData.name,
 
@@ -27,6 +30,7 @@ const makeCollectionService = collectionData => {
       itemPrivileges: collectionData.itemPrivileges,
       fields: ['_id', '_archived', 'createdAt', 'updatedAt'].concat(fieldsNames),
       entityValidator: collectionData.validator,
+      populates: collectionData.populateSchema,
       maxPageSize: Number.MAX_SAFE_INTEGER,
     }
   }
