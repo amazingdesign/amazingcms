@@ -87,7 +87,11 @@ module.exports = {
               columnRenderType: { type: 'string', enum: COLUMN_RENDER_TYPES },
               lookup: {
                 type: 'object',
-                properties: {},
+                properties: {
+                  serviceName: { type: 'string' },
+                  labelFieldName: { type: 'string' },
+                  valueFieldName: { type: 'string' },
+                },
               }
             },
           },
@@ -150,7 +154,9 @@ module.exports = {
                   lookup: {
                     type: 'object',
                     properties: {
-                      serviceName: { type: 'string' }
+                      serviceName: { type: 'string' },
+                      labelFieldName: { type: 'string' },
+                      valueFieldName: { type: 'string' },
                     }
                   }
                 },
