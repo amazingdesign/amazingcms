@@ -5,7 +5,7 @@ const hashWithSalt = require('@bit/amazingdesign.utils.hash-with-salt')
 const { getValuesFromItem } = require('@bit/amazingdesign.utils.variables-in-string')
 
 const { MoleculerError } = require('moleculer').Errors
-const { PrivilegesError, SingletonDataOverflow } = require('./db-utils.errors')
+const { PrivilegesError, SingletonDataOverflow, QueryByPopulationValues } = require('./db-utils.errors')
 const { Errors: WebErrors } = require('moleculer-web')
 
 module.exports = {
@@ -18,7 +18,10 @@ module.exports = {
       ]
     },
     error: {
-      '*': 'singletonOverflowErrorCatcher'
+      '*': [
+        'singletonOverflowErrorCatcher',
+        'queryByPopulationValuesErrorCatcher'
+      ]
     }
   },
 
@@ -377,7 +380,13 @@ module.exports = {
 
       return Promise.all(checkPromises)
         .then(() => ctx)
-    }
+    },
+
+    queryByPopulationValuesErrorCatcher(ctx, err) {
+      if (err instanceof QueryByPopulationValues) { }
+
+      throw err
+    },
 
   },
 }

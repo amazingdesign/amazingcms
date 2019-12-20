@@ -17,7 +17,19 @@ class SingletonDataOverflow extends MoleculerClientError {
   }
 }
 
+class QueryByPopulationValues extends MoleculerClientError {
+  constructor(message, type, data) {
+    super(
+      message || 'Attempted to query by population values!',
+      500, 
+      type || 'QUERY_BY_POPULATION_VALUES',
+      data
+    )
+  }
+}
+
 module.exports = {
   PrivilegesError,
   SingletonDataOverflow,
+  QueryByPopulationValues,
 }

@@ -87,6 +87,7 @@ describe('Test "db-utils" mixin', () => {
     settings: { requiredPrivileges: { hello: ['$EVENTS-action.name'] } },
   }))
   // item privileges
+  // amd query by population values
   broker.createService({
     name: 'mustbeowner-hello-item-privileges',
     mixins: [DbService, DbUtilsMixin],
@@ -108,6 +109,23 @@ describe('Test "db-utils" mixin', () => {
       }]
     },
   })
+  broker.createService({
+    name: 'owner-items',
+    mixins: [DbService, DbUtilsMixin],
+    settings: {
+      populates: { owner: 'owners.get' }
+    }
+  })
+  broker.createService({
+    name: 'owners',
+    mixins: [DbService, DbUtilsMixin],
+  })
+  const OWNERS = [
+    { _id: '1', firstName: 'OwnerFirstName1', lastName: 'OwnerLastName1' },
+    { _id: '2', firstName: 'OwnerFirstName2', lastName: 'OwnerLastName2' },
+    { _id: '3', firstName: 'OwnerFirstName3', lastName: 'OwnerLastName3' },
+    { _id: '4', firstName: 'OwnerFirstName4', lastName: 'OwnerLastName4' },
+  ]
   const MUST_BE_OWNER_TEST_ITEMS = [
     { owner: '1', name: '1 - owned by 1', order: 1 },
     { owner: '1', name: '2 - owned by 1', order: 2 },
@@ -126,13 +144,28 @@ describe('Test "db-utils" mixin', () => {
     { owner: '1', name: '15 - owned by 1', order: 15 },
     { owner: '1', name: '16 - owned by 1', order: 16 },
   ]
+  const OWNER_ITEMS = MUST_BE_OWNER_TEST_ITEMS
   const makeItemsInMustBeOwnerService = () => {
     const createItem = (item) => broker.call('mustbeowner-hello-item-privileges.create', item)
 
     return MUST_BE_OWNER_TEST_ITEMS.reduce(
-      (r, item) => {
-        return r.then(() => createItem(item))
-      },
+      (r, item) => r.then(() => createItem(item)),
+      Promise.resolve()
+    )
+  }
+  const makeItemsInOwnerItemsService = () => {
+    const createItem = (item) => broker.call('owner-items.create', item)
+
+    return OWNER_ITEMS.reduce(
+      (r, item) => r.then(() => createItem(item)),
+      Promise.resolve()
+    )
+  }
+  const makeItemsInOwnersService = () => {
+    const createItem = (item) => broker.call('owners.create', item)
+
+    return OWNERS.reduce(
+      (r, item) => r.then(() => createItem(item)),
       Promise.resolve()
     )
   }
@@ -156,7 +189,11 @@ describe('Test "db-utils" mixin', () => {
 
   beforeAll(() => {
     return broker.start()
-      .then(makeItemsInMustBeOwnerService)
+      .then(() => Promise.all([
+        makeItemsInMustBeOwnerService(),
+        makeItemsInOwnerItemsService(),
+        makeItemsInOwnersService(),
+      ]))
   })
   afterAll(() => broker.stop())
 
@@ -535,7 +572,7 @@ describe('Test "db-utils" mixin', () => {
           expect(dataWithoutIds).toEqual([])
         })
     })
-    
+
     it('returns only records owned by user from list with custom params - v2', () => {
       const USER_ID = '1'
       expect.assertions(1)
@@ -687,6 +724,79 @@ describe('Test "db-utils" mixin', () => {
               // eslint-disable-next-line max-len
               expect(error.message).toBe('User cant perform that action! Fail on filter rule for mustbeowner, some-other-permission!')
             })
+        })
+    })
+
+  })
+
+  describe('can do queries (list, find, count) by population values', () => {
+    const filterIds = (array) => array.map((item) => ({
+      ...item,
+      _id: undefined
+    }))
+
+    it('can simply create owners witch right ids', () => {
+      expect.assertions(1)
+
+      return broker.call('owners.find', {})
+        .then((results) => expect(results).toEqual(OWNERS))
+    })
+
+    it('can simply populate items', () => {
+      expect.assertions(1)
+
+      return broker.call('owner-items.find', { populate: ['owner'], sort: 'order' })
+        .then((results) => {
+          const expectedResults = OWNER_ITEMS.map((item) => ({
+            ...item,
+            owner: OWNERS.find((owner) => owner._id === item.owner)
+          }))
+
+          expect(filterIds(results)).toEqual(expectedResults)
+        })
+    })
+
+    it('can query by population not nested value', () => {
+      expect.assertions(1)
+
+      return broker.call(
+        'owner-items.find',
+        {
+          populate: ['owner'], sort: 'order', queryByPopulation: true,
+          query: { 'owner.firstName': 'OwnerFirstName4' }
+        }
+      )
+        .then((results) => {
+          const expectedResults = OWNER_ITEMS
+            .map((item) => ({
+              ...item,
+              owner: OWNERS.find((owner) => owner._id === item.owner)
+            }))
+            .filter((item) => item.owner && item.owner.firstName === 'OwnerFirstName4')
+
+          expect(filterIds(results)).toEqual(expectedResults)
+        })
+    })
+
+    it('can still query by not populated value if no queryByPopulation param passed', () => {
+      expect.assertions(1)
+
+      return broker.call(
+        'owner-items.find',
+        {
+          populate: ['owner'], sort: 'order',
+          query: { owner: '4' }
+        }
+      )
+        .then((results) => {
+          const expectedResults = OWNER_ITEMS
+            .map((item) => ({
+              ...item,
+              owner: OWNERS.find((owner) => owner._id === item.owner)
+            }))
+            .filter((item) => item.owner && item.owner.firstName === 'OwnerFirstName4')
+
+          expect(filterIds(results)).toEqual(expectedResults)
         })
     })
 
