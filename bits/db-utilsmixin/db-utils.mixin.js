@@ -2,7 +2,11 @@
 'use strict'
 const generateSalt = require('@bit/amazingdesign.utils.generate-salt')
 const hashWithSalt = require('@bit/amazingdesign.utils.hash-with-salt')
+const filterByPage = require('@bit/amazingdesign.utils.filter-by-page')
 const { getValuesFromItem } = require('@bit/amazingdesign.utils.variables-in-string')
+
+const { pickBy } = require('lodash')
+const { default: sift } = require('sift')
 
 const { MoleculerError } = require('moleculer').Errors
 const { PrivilegesError, SingletonDataOverflow, QueryByPopulationValues } = require('./db-utils.errors')
@@ -14,7 +18,8 @@ module.exports = {
       '*': [
         'singletonService',
         'privilegeChecker',
-        'itemPrivilegesChecker'
+        'itemPrivilegesChecker',
+        'queryByPopulation',
       ]
     },
     error: {
@@ -281,7 +286,6 @@ module.exports = {
     },
 
     createOptionsFromService(serviceName, labelFieldName = 'name', valueFieldName = '_id') {
-      this.logger.warn(serviceName, labelFieldName)
       return this.broker.call(`${serviceName}.find`, {}, { meta: { raw: true } })
         .then((items) => (
           items.map((item) => ({
@@ -382,10 +386,88 @@ module.exports = {
         .then(() => ctx)
     },
 
-    queryByPopulationValuesErrorCatcher(ctx, err) {
-      if (err instanceof QueryByPopulationValues) { }
+    queryByPopulation(ctx) {
+      const actionName = ctx.action.rawName
 
-      throw err
+      const checkIfIsQueryByPopulationParamSet = () => {
+        const { queryByPopulation } = ctx.params
+
+        if (queryByPopulation) throw new QueryByPopulationValues()
+      }
+
+      switch (actionName) {
+        case 'find':
+          checkIfIsQueryByPopulationParamSet()
+          break
+        case 'list':
+          checkIfIsQueryByPopulationParamSet()
+          break
+        case 'count':
+          checkIfIsQueryByPopulationParamSet()
+          break
+        case 'get':
+          // normal behaviour
+          break
+        case 'update':
+          // normal behaviour
+          break
+        case 'remove':
+          // normal behaviour
+          break
+        case 'insert':
+          // normal behaviour
+          break
+        case 'create':
+          // normal behaviour
+          break
+      }
+
+      return ctx
+    },
+
+    async queryByPopulationValuesErrorCatcher(ctx, err) {
+      if (!(err instanceof QueryByPopulationValues)) throw err
+
+      this.logger.info(`Error occurred when '${ctx.action.name}' action was called`)
+      this.logger.info(`Error type ${err.type} was thrown. Handling it by running queryByPopulation!`)
+
+      const actionName = ctx.action.rawName
+      const serviceName = ctx.action.name.split('.')[0]
+      const populateFields = ctx.params.populate
+
+      const queryWithoutPopulationFields = pickBy(
+        ctx.params.query || {},
+        (value, key) => !populateFields.includes(key.split('.')[0])
+      )
+      const queryWithOnlyPopulationFields = pickBy(
+        ctx.params.query || {},
+        (value, key) => populateFields.includes(key.split('.')[0])
+      )
+
+      const findAllParams = { ...ctx.params, query: queryWithoutPopulationFields }
+      delete findAllParams.queryByPopulation
+
+      const allResults = await this.broker.call(`${serviceName}.find`, findAllParams)
+
+      const filteredByQueryResults = allResults.filter(sift(queryWithOnlyPopulationFields))
+      const countTotal = filteredByQueryResults.length
+
+      const { page = 1, pageSize = 10 } = ctx.params
+
+      switch (actionName) {
+        case 'find':
+          return filteredByQueryResults
+        case 'count':
+          return countTotal
+        case 'list':
+          return {
+            rows: filteredByQueryResults.filter(filterByPage(page, pageSize)),
+            total: countTotal,
+            page: page,
+            pageSize: pageSize,
+            totalPages: Math.floor((countTotal + pageSize - 1) / pageSize)
+          }
+      }
     },
 
   },

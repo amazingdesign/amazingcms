@@ -2,6 +2,7 @@
 'use strict'
 
 const crypto = require('crypto')
+const filterByPage = require('@bit/amazingdesign.utils.filter-by-page')
 
 const DbService = require('moleculer-db')
 const { ServiceBroker } = require('moleculer')
@@ -730,7 +731,7 @@ describe('Test "db-utils" mixin', () => {
   })
 
   describe('can do queries (list, find, count) by population values', () => {
-    const filterIds = (array) => array.map((item) => ({
+    const filterIds = (array) => array && array.map((item) => ({
       ...item,
       _id: undefined
     }))
@@ -756,7 +757,7 @@ describe('Test "db-utils" mixin', () => {
         })
     })
 
-    it('can query by population not nested value', () => {
+    it('can filter query by population not nested value', () => {
       expect.assertions(1)
 
       return broker.call(
@@ -778,7 +779,7 @@ describe('Test "db-utils" mixin', () => {
         })
     })
 
-    it('can still query by not populated value if no queryByPopulation param passed', () => {
+    it('can still filter query by not populated value if no queryByPopulation param passed', () => {
       expect.assertions(1)
 
       return broker.call(
@@ -797,6 +798,149 @@ describe('Test "db-utils" mixin', () => {
             .filter((item) => item.owner && item.owner.firstName === 'OwnerFirstName4')
 
           expect(filterIds(results)).toEqual(expectedResults)
+        })
+    })
+
+    it('can count query by population not nested value', () => {
+      expect.assertions(1)
+
+      return broker.call(
+        'owner-items.count',
+        {
+          populate: ['owner'], sort: 'order', queryByPopulation: true,
+          query: { 'owner.firstName': 'OwnerFirstName4' }
+        }
+      )
+        .then((result) => {
+          const expectedResults = OWNER_ITEMS
+            .map((item) => ({
+              ...item,
+              owner: OWNERS.find((owner) => owner._id === item.owner)
+            }))
+            .filter((item) => item.owner && item.owner.firstName === 'OwnerFirstName4')
+            .length
+
+          expect(result).toBe(expectedResults)
+        })
+    })
+
+    it('can still count query by not populated value if no queryByPopulation param passed', () => {
+      expect.assertions(1)
+
+      return broker.call(
+        'owner-items.count',
+        {
+          populate: ['owner'], sort: 'order',
+          query: { owner: '4' }
+        }
+      )
+        .then((result) => {
+          const expectedResults = OWNER_ITEMS
+            .map((item) => ({
+              ...item,
+              owner: OWNERS.find((owner) => owner._id === item.owner)
+            }))
+            .filter((item) => item.owner && item.owner.firstName === 'OwnerFirstName4')
+            .length
+
+          expect(result).toEqual(expectedResults)
+        })
+    })
+
+    it('can list query by population not nested value', () => {
+      expect.assertions(1)
+
+      return broker.call(
+        'owner-items.list',
+        {
+          populate: ['owner'], sort: 'order', queryByPopulation: true,
+          query: { 'owner.firstName': 'OwnerFirstName4' }
+        }
+      )
+        .then((result) => {
+          const resultRows = result.rows
+          const expectedAllItems = OWNER_ITEMS
+            .map((item) => ({
+              ...item,
+              owner: OWNERS.find((owner) => owner._id === item.owner)
+            }))
+            .filter((item) => item.owner && item.owner.firstName === 'OwnerFirstName4')
+          const expectedCount = expectedAllItems.length
+          const expectedRows = expectedAllItems.filter(filterByPage(1, 10))
+
+          expect({ ...result, rows: filterIds(resultRows) }).toEqual({
+            page: 1,
+            pageSize: 10,
+            totalPages: Math.floor((expectedCount + 10 - 1) / 10),
+            total: expectedCount,
+            rows: expectedRows,
+          })
+        })
+    })
+
+    it('can list query by population not nested value v2', () => {
+      expect.assertions(1)
+
+      return broker.call(
+        'owner-items.list',
+        {
+          populate: ['owner'], sort: 'order', queryByPopulation: true,
+          query: { 'owner.firstName': 'OwnerFirstName1' }
+        }
+      )
+        .then((result) => {
+          const resultRows = result.rows
+          const expectedAllItems = OWNER_ITEMS
+            .map((item) => ({
+              ...item,
+              owner: OWNERS.find((owner) => owner._id === item.owner)
+            }))
+            .filter((item) => item.owner && item.owner.firstName === 'OwnerFirstName1')
+          const expectedCount = expectedAllItems.length
+          const expectedRows = expectedAllItems.filter(filterByPage(1, 10))
+
+          expect({ ...result, rows: filterIds(resultRows) }).toEqual({
+            page: 1,
+            pageSize: 10,
+            totalPages: Math.floor((expectedCount + 10 - 1) / 10),
+            total: expectedCount,
+            rows: expectedRows,
+          })
+        })
+    })
+
+    it('can list query by population not nested value v3', () => {
+      expect.assertions(1)
+
+      const page = 3
+      const pageSize = 5
+
+      return broker.call(
+        'owner-items.list',
+        {
+          page, pageSize,
+          populate: ['owner'], sort: 'order', queryByPopulation: true,
+          query: { 'owner.firstName': 'OwnerFirstName1' }
+        }
+      )
+        .then((result) => {
+          const resultRows = result.rows
+          const expectedAllItems = OWNER_ITEMS
+            .map((item) => ({
+              ...item,
+              owner: OWNERS.find((owner) => owner._id === item.owner)
+            }))
+            .filter((item) => item.owner && item.owner.firstName === 'OwnerFirstName1')
+          const expectedCount = expectedAllItems.length
+          const expectedRows = expectedAllItems.filter(filterByPage(page, pageSize))
+
+          expect({ ...result, rows: filterIds(resultRows) }).toEqual({
+            page,
+            pageSize,
+            totalPages: Math.floor((expectedCount + pageSize - 1) / pageSize),
+            total: expectedCount,
+            rows: expectedRows,
+          })
         })
     })
 

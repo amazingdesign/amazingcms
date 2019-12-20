@@ -8,9 +8,6 @@ const DbArchiveMixin = require('../bits/db-archive.mixin')
 const makeCollectionService = collectionData => {
   const fieldsNames = Object.keys(collectionData.schema.properties)
 
-  console.log(collectionData.name)
-  console.log(collectionData.populateSchema)
-
   return {
     name: collectionData.name,
 
