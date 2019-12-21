@@ -224,6 +224,12 @@ module.exports = {
       const actionName = ctx.action.rawName
       const serviceName = ctx.service.name
 
+      const throwNotAllowedIfCalledByApi = ({ alwaysThrow } = {}) => {
+        if (alwaysThrow || ctx.meta.calledByApi) {
+          throw new WebErrors.BadRequestError('Method not allowed!')
+        }
+      }
+
       switch (actionName) {
         case 'create':
           return this.broker.call(`${serviceName}.count`)
@@ -241,19 +247,21 @@ module.exports = {
         case 'count':
           // normal behavior
           break
+        case 'get':
+          throwNotAllowedIfCalledByApi()
+          break
         case 'update':
-          if (ctx.meta.calledByApi) {
-            throw new WebErrors.BadRequestError('Method not allowed!')
-          }
+          throwNotAllowedIfCalledByApi()
           break
         case 'insert':
-          throw new WebErrors.BadRequestError('Method not allowed!')
-        case 'get':
-          throw new WebErrors.BadRequestError('Method not allowed!')
+          throwNotAllowedIfCalledByApi({ alwaysThrow: true })
+          break
         case 'remove':
-          throw new WebErrors.BadRequestError('Method not allowed!')
+          throwNotAllowedIfCalledByApi({ alwaysThrow: true })
+          break
         default:
-          throw new WebErrors.BadRequestError('Method not allowed!')
+          throwNotAllowedIfCalledByApi({ alwaysThrow: true })
+          break
       }
 
     },
