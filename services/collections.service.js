@@ -11,13 +11,15 @@ const DbArchiveMixin = require('../bits/db-archive.mixin')
 
 const COLUMN_RENDER_TYPES = [
   'avatar',
-  'chips',
+  'boolean-icon',
+  'boolean',
   'chips-lookup',
-  'date',
-  'date-time',
-  'time-from-now',
+  'chips',
   'currency',
-  'stringify'
+  'date-time',
+  'date',
+  'stringify',
+  'time-from-now',
 ]
 
 module.exports = {
