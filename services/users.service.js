@@ -70,7 +70,10 @@ module.exports = {
       required: ['email', 'password', 'passwordSalt', 'refreshTokenSalt'],
       properties: {
         email: { type: 'string', format: 'email' },
-        avatar: { type: 'string' },
+        avatar: {
+          type: 'object',
+          properties: {},
+        },
         password: { type: 'string', minLength: 1024, maxLength: 1024 },
         passwordSalt: { type: 'string', minLength: 32, maxLength: 32 },
         refreshTokenSalt: { type: 'string', minLength: 32, maxLength: 32 },
@@ -95,7 +98,18 @@ module.exports = {
           required: ['email'],
           properties: {
             email: { type: 'string', format: 'email' },
-            avatar: { type: 'string', uniforms: { component: 'Base64ImageField' } },
+            avatar: {
+              type: 'object',
+              properties: {},
+              uniforms: {
+                component: 'FileField',
+                bucketName: 'photos',
+                dropzoneProps: {
+                  accept: ['image/jpeg', 'image/png'],
+                  maxSize: 51200, // 50 KB
+                },
+              },
+            },
             password: { type: 'string', uniforms: { type: 'password' } },
             firstName: { type: 'string' },
             lastName: { type: 'string' },
