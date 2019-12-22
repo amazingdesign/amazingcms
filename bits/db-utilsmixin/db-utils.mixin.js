@@ -9,8 +9,13 @@ const _ = require('lodash')
 const { default: sift } = require('sift')
 
 const { MoleculerError } = require('moleculer').Errors
-const { PrivilegesError, SingletonDataOverflow, QueryByPopulationValues } = require('./db-utils.errors')
 const { Errors: WebErrors } = require('moleculer-web')
+const {
+  PrivilegesError,
+  SingletonDataOverflow,
+  QueryByPopulationValues,
+  EntityWithTheSameValueExists,
+} = require('./db-utils.errors')
 
 module.exports = {
   hooks: {
@@ -119,19 +124,31 @@ module.exports = {
 
     throwWhenFieldExists(fieldName) {
       return (ctx) => {
+        // is should be undefined if it is create not update
+        const id = ctx && ctx.params && ctx.params.id
         const fieldValue = ctx.params[fieldName]
 
         if (!fieldValue) {
-          throw new Error(`No "${fieldName}" passed. Cant check if exists!`)
+          // no error here
+          // if updating without restricted field its means the field is ok
+          // if the field is required entity validator should throw instead
+          return  ctx
         }
 
-        return this.actions.count({
+        return this.actions.find({
           query: {
             [fieldName]: fieldValue
           },
-        }).then(resultsCount => {
+        }).then((results) => {
+          const resultsWithoutCurrentlyUpdated = results.filter((result) => result._id !== id)
+          const resultsCount = resultsWithoutCurrentlyUpdated.length
+
           if (resultsCount > 0) {
-            throw new Error(`Entry with field "${fieldName}" with value "${fieldValue}" already exists!`)
+            throw new EntityWithTheSameValueExists(
+              `Entry with field "${fieldName}" with value "${fieldValue}" already exists!`,
+              null,
+              { fieldName, fieldValue }
+            )
           }
         })
       }

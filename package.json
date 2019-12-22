@@ -35,6 +35,7 @@
     "@bit/amazingdesign.moleculer.db-metadatamixin": "^1.1.0",
     "@bit/amazingdesign.moleculer.db-utilsmixin": "^1.3.0",
     "@bit/amazingdesign.moleculer.event-dispatchermixin": "0.0.1",
+    "@bit/amazingdesign.uniforms.find-first-level-slug-fields": "0.0.1",
     "@bit/amazingdesign.utils.config": "^1.0.0",
     "@bit/amazingdesign.utils.fastest-validator-schema-checker": "0.0.1",
     "@bit/amazingdesign.utils.filter-by-page": "0.0.1",

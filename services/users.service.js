@@ -32,6 +32,7 @@ module.exports = {
       ],
       'update': [
         'hashPassword',
+        'throwWhenUserExists',
       ],
       'insert': () => { return Promise.reject(new Error('Method not allowed!')) }
     },

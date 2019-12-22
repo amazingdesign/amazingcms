@@ -20,9 +20,8 @@ module.exports = {
 
   hooks: {
     before: {
-      'create': [
-        'throwWhenLanguageCodeExists',
-      ]
+      create: 'throwWhenLanguageCodeExists',
+      update: 'throwWhenLanguageCodeExists',
     }
   },
 

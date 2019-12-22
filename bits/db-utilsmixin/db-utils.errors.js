@@ -28,8 +28,20 @@ class QueryByPopulationValues extends MoleculerClientError {
   }
 }
 
+class EntityWithTheSameValueExists extends MoleculerClientError {
+  constructor(message, type, data) {
+    super(
+      message || 'Entry with field with the same value already exists!',
+      500, 
+      type || 'ENTITY_WITH_THE_SAME_VALUE_EXISTS',
+      data
+    )
+  }
+}
+
 module.exports = {
   PrivilegesError,
   SingletonDataOverflow,
   QueryByPopulationValues,
+  EntityWithTheSameValueExists,
 }

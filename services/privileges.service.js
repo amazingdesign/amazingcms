@@ -20,9 +20,8 @@ module.exports = {
 
   hooks: {
     before: {
-      'create': [
-        'throwWhenNameExists',
-      ]
+      create: 'throwWhenNameExists',
+      update: 'throwWhenNameExists',
     }
   },
 
