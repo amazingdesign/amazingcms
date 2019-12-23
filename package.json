@@ -13,7 +13,10 @@
     "fix": "eslint --fix ./services",
     "dc:up": "docker-compose up --build -d",
     "dc:down": "docker-compose down",
-    "tunnel": "lt --subdomain amazingcms --port $(grep PORT .env | cut -d '=' -f2)"
+    "tunnel": "lt --subdomain amazingcms --port $(grep PORT .env | cut -d '=' -f2)",
+    "docker": "docker build . -t harbor.amazingdesign.eu/amazingcms/backend:$(sed -nE 's/^\\s*\"version\": \"(.*?)\",$/\\1/p' package.json)",
+    "docker:push": "docker push harbor.amazingdesign.eu/amazingcms/backend:$(sed -nE 's/^\\s*\"version\": \"(.*?)\",$/\\1/p' package.json)",
+    "docker:deploy": "npm run docker && npm run docker:push"
   },
   "keywords": [
     "microservices",
