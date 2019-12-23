@@ -266,7 +266,10 @@ module.exports = {
                 value.serviceName,
                 value.labelFieldName,
                 value.valueFieldName,
-              )
+              ).catch((error) => {
+                this.logger.error('Cant load options. ' + error.message)
+                return []
+              })
             case 'lookup':
               if (!value.serviceName) return value
 
@@ -274,7 +277,10 @@ module.exports = {
                 value.serviceName,
                 value.labelFieldName,
                 value.valueFieldName,
-              )
+              ).catch((error) => {
+                this.logger.error('Cant load lookup. ' + error.message)
+                return []
+              })
             default:
               return fillSchemaWithOptions(value)
           }

@@ -18,9 +18,9 @@ module.exports = {
   },
 
   started() {
-    this.broker.waitForServices('collections')
+    this.broker.waitForServices(['collections', 'languages'])
       // we must pass meta raw here, because we cant prepareCollectionsSchema from collections
-      // that arent loaded yey - they are will be loaded now
+      // that arent loaded yet - they are will be loaded now
       .then(() => this.broker.call('collections.find', {}, { meta: { raw: true } }))
       .then(collectionsData => collectionsData.map(this.createServiceFromCollectionData))
       .then(collectionsStartPromises => Promise.all(collectionsStartPromises))
@@ -51,11 +51,11 @@ module.exports = {
       return this.broker.destroyService(this.broker.getLocalService(serviceName))
     },
     loadCollectionAsService(collectionName) {
-      return this.broker.call('collections.find', {
-        query: {
-          name: collectionName,
-        }
-      })
+      return this.broker.call(
+        'collections.find',
+        { query: { name: collectionName } },
+        { meta: { raw: true } }
+      )
         .then(collectionsData => {
           if (collectionsData.length !== 1) {
             return Promise.reject(

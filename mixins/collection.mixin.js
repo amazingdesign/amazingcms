@@ -9,7 +9,7 @@ const DbArchiveMixin = require('../bits/db-archive.mixin')
 const makeCollectionService = collectionData => {
   const fieldsNames = Object.keys(collectionData.schema.properties)
 
-  return {
+  const serviceDeclaration = {
     name: collectionData.name,
 
     hooks: {
@@ -53,6 +53,8 @@ const makeCollectionService = collectionData => {
       },
     }
   }
+
+  return serviceDeclaration
 }
 
 module.exports = {
