@@ -22,10 +22,10 @@ module.exports = {
 
   settings: {
     requiredPrivileges: {
-      create: ['superadmin'],
-      getProxy: ['superadmin'],
-      listProxy: ['superadmin'],
-      removeProxy: ['superadmin'],
+      create: ['superadmin', 'admin'],
+      getProxy: ['superadmin', 'admin'],
+      listProxy: ['superadmin', 'admin'],
+      removeProxy: ['superadmin', 'admin'],
     },
     maxPageSize: Number.MAX_SAFE_INTEGER
   },
