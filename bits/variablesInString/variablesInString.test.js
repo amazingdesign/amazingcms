@@ -95,6 +95,28 @@ describe('Test for variablesInString - replace function', () => {
     `)
   })
 
+  it('should return replaced string if found them in nested replacers', () => {
+    const replacers = {
+      names: ['Ala', 'Ola', 'Ela'],
+      nested: { value: 'nestedvalue' },
+      double: { nested: { value: 'doublenestedvalue' } },
+      promise: Promise.resolve(),
+    }
+
+    expect(replace('name', replacers)).toBe('name')
+    expect(replace('{{names}}', replacers)).toBe('Ala,Ola,Ela')
+    expect(replace('{{nested}}', replacers)).toBe('[object Object]')
+    expect(replace('{{promise}}', replacers)).toBe('[object Promise]')
+    expect(replace('name {{names.length}}', replacers)).toBe('name 3')
+    expect(replace('name {{namesWithTypo.length}}', replacers)).toBe('name ')
+    expect(replace('{{nested.value}}', replacers)).toBe('nestedvalue')
+    expect(replace('{{double.nested.value}}', replacers)).toBe('doublenestedvalue')
+    expect(
+      replace('{{names.length}} {{nested.value}} {{double.nested.value}}', replacers)
+    ).toBe('3 nestedvalue doublenestedvalue')
+
+  })
+
 })
 
 describe('Test for variablesInString - getValuesFromItem function', () => {

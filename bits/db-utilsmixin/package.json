@@ -1,6 +1,6 @@
 {
   "name": "@bit/amazingdesign.moleculer.db-utilsmixin",
-  "version": "1.3.5",
+  "version": "1.3.7",
   "homepage": "https://bit.dev/amazingdesign/moleculer/db-utilsmixin",
   "main": "moleculer-mixins/db-utils.mixin.js",
   "dependencies": {

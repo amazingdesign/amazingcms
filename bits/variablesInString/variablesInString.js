@@ -1,3 +1,5 @@
+const _ = require('lodash')
+
 const check = (string) => {
   const regex = /\{{([^}]+)\}}/g
 
@@ -15,8 +17,11 @@ const replace = (string, replacers) => {
 
   if (matches.length === 0) return string
 
-  const stringWithVars = Object.entries(replacers || {}).reduce(
-    (r, [key, val]) => r.replace(new RegExp(`{{${key}}}`, 'g'), val),
+  const stringWithVars = matches.reduce(
+    (r, match) => {
+      const val = _.get(replacers, match)
+      return replacers && val ? r.replace(new RegExp(`{{${match}}}`, 'g'), val) : r
+    },
     string
   )
 
@@ -24,7 +29,7 @@ const replace = (string, replacers) => {
     (r, key) => r.replace(new RegExp(`{{${key}}}`, 'g'), ''),
     stringWithVars
   )
-  
+
   return stringWithVarsAndDeletedBrackets
 }
 
@@ -32,9 +37,9 @@ const getValuesFromItem = (stringWithPossibleVars, item) => {
   const varNames = check(stringWithPossibleVars)
 
   if (varNames.length === 0) return item[stringWithPossibleVars]
-  
+
   const replacer = varNames.reduce(
-    (r, varName) => ({...r, [varName]: item[varName]}),
+    (r, varName) => ({ ...r, [varName]: item[varName] }),
     {}
   )
 
