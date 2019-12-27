@@ -13,6 +13,7 @@ const COLUMN_RENDER_TYPES = [
   'avatar',
   'boolean-icon',
   'boolean',
+  'button-link',
   'chips-lookup',
   'chips',
   'currency',
@@ -20,6 +21,17 @@ const COLUMN_RENDER_TYPES = [
   'date',
   'stringify',
   'time-from-now',
+]
+
+const BUTTON_LINK_VARIANTS = [
+  'text',
+  'contained',
+  'outlined',
+  'icon'
+]
+const BUTTON_LINK_COLORS = [
+  'primary',
+  'secondary'
 ]
 
 module.exports = {
@@ -86,6 +98,15 @@ module.exports = {
               name: { type: 'string' },
               label: { type: 'string' },
               columnRenderType: { type: 'string', enum: COLUMN_RENDER_TYPES },
+              button: {
+                type: 'object',
+                properties: {
+                  label: { type: 'string' },
+                  link: { type: 'string' },
+                  variant: { type: 'string', enum: BUTTON_LINK_VARIANTS, default: BUTTON_LINK_VARIANTS[0] },
+                  color: { type: 'string', enum: BUTTON_LINK_COLORS, default: BUTTON_LINK_COLORS[0] },
+                }
+              },
               lookup: {
                 type: 'object',
                 properties: {
@@ -152,6 +173,15 @@ module.exports = {
                   name: { type: 'string' },
                   label: { type: 'string' },
                   columnRenderType: { type: 'string', enum: COLUMN_RENDER_TYPES },
+                  button: {
+                    type: 'object',
+                    properties: {
+                      label: { type: 'string' },
+                      link: { type: 'string' },
+                      variant: { type: 'string', enum: BUTTON_LINK_VARIANTS, default: BUTTON_LINK_VARIANTS[0] },
+                      color: { type: 'string', enum: BUTTON_LINK_COLORS, default: BUTTON_LINK_COLORS[0] },
+                    }
+                  },
                   lookup: {
                     type: 'object',
                     properties: {
