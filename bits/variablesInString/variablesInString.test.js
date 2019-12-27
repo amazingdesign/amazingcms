@@ -117,6 +117,16 @@ describe('Test for variablesInString - replace function', () => {
 
   })
 
+  it('should return replaced string with default values', () => {
+    const replacers = {
+      names: ['Ala', 'Ola', 'Ela'],
+    }
+
+    expect(replace('{{name|Ala}}', replacers)).toBe('Ala')
+    expect(replace('name {{names.length|0}}', replacers)).toBe('name 3')
+    expect(replace('name {{namesWithTypo.length|0}}', replacers)).toBe('name 0')
+  })
+
 })
 
 describe('Test for variablesInString - getValuesFromItem function', () => {

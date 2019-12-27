@@ -12,6 +12,8 @@ const check = (string) => {
   return results
 }
 
+const escapeRegExp = (value) => value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+
 const replace = (string, replacers) => {
   const matches = check(string)
 
@@ -19,8 +21,9 @@ const replace = (string, replacers) => {
 
   const stringWithVars = matches.reduce(
     (r, match) => {
-      const val = _.get(replacers, match)
-      return replacers && val ? r.replace(new RegExp(`{{${match}}}`, 'g'), val) : r
+      const [key, defaultVal] = match.split('|')
+      const val = _.get(replacers, key) || defaultVal
+      return replacers && val ? r.replace(new RegExp(`{{${escapeRegExp(match)}}}`, 'g'), val) : r
     },
     string
   )
