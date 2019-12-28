@@ -488,11 +488,13 @@ module.exports = {
 
       const queryWithoutPopulationFields = _.pickBy(
         ctx.params.query || {},
-        (value, key) => !(populateFields.includes(key.split('.')[0]))
+        // do not want queries by NOT YET populated field here (eg. by id)
+        // exclude such queries by searching '.' in theirs keys
+        (value, key) => !key.split('.')[1] || !(populateFields.includes(key.split('.')[0]))
       )
       const queryWithOnlyPopulationFields = _.pickBy(
         ctx.params.query || {},
-        (value, key) => populateFields.includes(key.split('.')[0])
+        (value, key) => key.split('.')[1] && populateFields.includes(key.split('.')[0])
       )
 
       const findAllParams = { ...ctx.params, query: queryWithoutPopulationFields }
