@@ -7,7 +7,7 @@ module.exports = {
 
   settings: {
     requiredPrivileges: {
-      get: ['admin', 'superadmin'],
+      get: ['admin', 'superadmin', 'admin-panel-access'],
     },
     exposedCollections: [
       'users',

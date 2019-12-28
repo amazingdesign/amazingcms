@@ -59,10 +59,10 @@ module.exports = {
 
   settings: {
     requiredPrivileges: {
-      count: ['admin', 'superadmin'],
-      get: ['admin', 'superadmin'],
-      list: ['admin', 'superadmin'],
-      find: ['admin', 'superadmin'],
+      count: ['admin', 'superadmin', 'admin-panel-access'],
+      get: ['admin', 'superadmin', 'admin-panel-access'],
+      list: ['admin', 'superadmin', 'admin-panel-access'],
+      find: ['admin', 'superadmin', 'admin-panel-access'],
       create: ['superadmin'],
       insert: ['superadmin'],
       update: ['superadmin'],
