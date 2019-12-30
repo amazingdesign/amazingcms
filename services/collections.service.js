@@ -59,6 +59,7 @@ module.exports = {
 
   settings: {
     requiredPrivileges: {
+      _displayInAdmin: ['superadmin'],
       count: ['admin', 'superadmin', 'admin-panel-access'],
       get: ['admin', 'superadmin', 'admin-panel-access'],
       list: ['admin', 'superadmin', 'admin-panel-access'],
@@ -128,6 +129,7 @@ module.exports = {
           type: 'object',
           additionalProperties: false,
           properties: {
+            _displayInAdmin: { type: 'array', items: { type: 'string' } },
             count: { type: 'array', items: { type: 'string' } },
             list: { type: 'array', items: { type: 'string' } },
             create: { type: 'array', items: { type: 'string' } },
@@ -204,6 +206,7 @@ module.exports = {
               type: 'object',
               additionalProperties: false,
               properties: {
+                _displayInAdmin: { $ref: '#/definitions/privileges' },
                 count: { $ref: '#/definitions/privileges' },
                 list: { $ref: '#/definitions/privileges' },
                 create: { $ref: '#/definitions/privileges' },

@@ -43,11 +43,11 @@ module.exports = {
 
   settings: {
     requiredPrivileges: {
-      count: ['superadmin'],
-      list: ['superadmin'],
+      count: ['superadmin', 'admin'],
+      list: ['superadmin', 'admin'],
       create: ['superadmin'],
       insert: ['superadmin'],
-      get: ['superadmin'],
+      get: ['superadmin', 'admin'],
       update: ['superadmin'],
       remove: ['superadmin'],
       getSchema: ['superadmin'],
