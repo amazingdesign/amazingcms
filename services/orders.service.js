@@ -39,7 +39,17 @@ module.exports = {
       remove: ['$NONE'],
       getSchema: ['superadmin'],
     },
-    fields: ['_id', 'createdAt', 'updatedAt', 'buyerEmail', 'basket', 'orderTotal', 'status', 'additionalInfo'],
+    fields: [
+      '_id',
+      '_archived',
+      'createdAt',
+      'updatedAt',
+      'buyerEmail',
+      'basket',
+      'orderTotal',
+      'status',
+      'additionalInfo'
+    ],
     entityValidator: {
       type: 'object',
       required: ['basket', 'orderTotal', 'status'],

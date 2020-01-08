@@ -29,7 +29,7 @@ module.exports = {
       remove: ['$NONE'],
       getSchema: ['$NONE'],
     },
-    fields: ['_id', 'action', 'level', 'message', 'data', 'createdAt', 'updatedAt'],
+    fields: ['_id', '_archived', 'action', 'level', 'message', 'data', 'createdAt', 'updatedAt'],
     entityValidator: {
       type: 'object',
       required: ['action', 'level', 'message'],

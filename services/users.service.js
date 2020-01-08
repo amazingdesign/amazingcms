@@ -54,6 +54,7 @@ module.exports = {
     },
     fields: [
       '_id',
+      '_archived',
       'email',
       'avatar',
       'password',

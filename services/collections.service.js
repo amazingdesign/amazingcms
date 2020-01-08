@@ -71,6 +71,7 @@ module.exports = {
     },
     fields: [
       '_id',
+      '_archived',
       'name',
       'displayName',
       'icon',
