@@ -74,7 +74,7 @@ module.exports = {
             return Promise.reject(new Error('No languages found. Cant create service without language!'))
           }
 
-          const servicesCreationPromises = languagesData.map(languageData => {
+          const createdServicesNames = languagesData.map(languageData => {
             const collectionName = collectionData.name + '__' + languageData.code
 
             this.broker.createService(
@@ -84,10 +84,10 @@ module.exports = {
               })
             )
 
-            return this.broker.waitForServices(collectionName)
+            return collectionName
           })
 
-          return Promise.all(servicesCreationPromises)
+          return this.broker.waitForServices(createdServicesNames)
         })
     },
   }

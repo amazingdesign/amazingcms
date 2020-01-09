@@ -132,7 +132,7 @@ module.exports = {
           // no error here
           // if updating without restricted field its means the field is ok
           // if the field is required entity validator should throw instead
-          return  ctx
+          return ctx
         }
 
         return this.actions.find({
@@ -297,8 +297,22 @@ module.exports = {
       throw err
     },
 
+    callService(serviceName) {
+      if (serviceName.includes('__')) {
+        return (action, params, options) => (
+          this.broker.call(
+            `actions.${action}`,
+            params,
+            { ...options, meta: { ...options.meta, collectionName: serviceName.split('__')[0] } }
+          )
+        )
+      }
+
+      return (action, params, options) => this.broker.call(`${serviceName}.${action}`, params, options)
+    },
+
     createLookupFromService(serviceName, valueFieldName = 'name', keyFieldName = '_id') {
-      return this.broker.call(`${serviceName}.find`, {}, { meta: { raw: true } })
+      return this.callService(serviceName)('find', {}, { meta: { raw: true } })
         .then((items) => (
           items.reduce(
             (r, item) => ({
@@ -311,7 +325,7 @@ module.exports = {
     },
 
     createOptionsFromService(serviceName, labelFieldName = 'name', valueFieldName = '_id') {
-      return this.broker.call(`${serviceName}.find`, {}, { meta: { raw: true } })
+      return this.callService(serviceName)('find', {}, { meta: { raw: true } })
         .then((items) => (
           items.map((item) => ({
             label: getValuesFromItem(labelFieldName, item),
