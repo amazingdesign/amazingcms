@@ -361,14 +361,24 @@ module.exports = {
           ) || []
 
           // if user do not have certain privileges that causes filter, then skip
-          if (!privileges.find(privilege => privilegesFromToken.includes(privilege))) return
+          // but go with $ALL_AUTHENTICATED without check
+          if (
+            !privileges.includes('$ALL_AUTHENTICATED') &&
+            !privileges.find(privilege => privilegesFromToken.includes(privilege))
+          ) return
 
           const addSearchParams = () => {
             // modify ctx from outer scope
             ctx.params = ctx.params || {}
             ctx.params.query = ctx.params.query || {}
 
-            const queryToAdd = { [itemPath]: _.get(decodedToken, tokenPath) }
+            const tokenPathValue = _.get(decodedToken, tokenPath)
+            const queryToAdd = (
+              Array.isArray(tokenPathValue) ?
+                { [itemPath]: { $in: tokenPathValue } }
+                :
+                { [itemPath]: tokenPathValue }
+            )
 
             this.logger.info(`Added ${JSON.stringify(queryToAdd)} to filter query!`)
 
@@ -403,7 +413,23 @@ module.exports = {
 
             const item = await this.broker.call(`${serviceName}.get`, { id, populate })
 
-            if (_.get(item, itemPath) !== _.get(decodedToken, tokenPath)) {
+            const tokenPathValue = _.get(decodedToken, tokenPath)
+            const itemPathValue = _.get(item, itemPath)
+
+            const tokenPathValueIsOrIncludesItemPathValue = (
+              Array.isArray(tokenPathValue) && !Array.isArray(itemPathValue) ?
+                tokenPathValue.includes(itemPathValue)
+                :
+                !Array.isArray(tokenPathValue) && Array.isArray(itemPathValue) ?
+                  itemPathValue.includes(tokenPathValue)
+                  :
+                  Array.isArray(tokenPathValue) && Array.isArray(itemPathValue) ?
+                    tokenPathValue.find((tokenPathItem) => itemPathValue.includes(tokenPathItem))
+                    :
+                    itemPathValue === tokenPathValue
+            )
+
+            if (!tokenPathValueIsOrIncludesItemPathValue) {
               const message = `User cant perform that action! Fail on filter rule for ${privileges.join(', ')}!`
               this.logger.error(message)
               throw new PrivilegesError(message)

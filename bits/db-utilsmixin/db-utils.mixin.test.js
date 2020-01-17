@@ -88,7 +88,7 @@ describe('Test "db-utils" mixin', () => {
     settings: { requiredPrivileges: { hello: ['$EVENTS-action.name'] } },
   }))
   // item privileges
-  // amd query by population values
+  // and query by population values
   broker.createService({
     name: 'mustbeowner-hello-item-privileges',
     mixins: [DbService, DbUtilsMixin],
@@ -201,6 +201,54 @@ describe('Test "db-utils" mixin', () => {
       Promise.resolve()
     )
   }
+  // item privileges with arrays
+  broker.createService({
+    name: 'item-must-have-privilege',
+    mixins: [DbService, DbUtilsMixin],
+    settings: {
+      itemPrivileges: [{
+        privileges: ['$ALL_AUTHENTICATED'],
+        tokenPath: 'privileges',
+        itemPath: 'privilege',
+      }],
+    },
+  })
+  broker.createService({
+    name: 'item-must-have-privileges',
+    mixins: [DbService, DbUtilsMixin],
+    settings: {
+      itemPrivileges: [{
+        privileges: ['$ALL_AUTHENTICATED'],
+        tokenPath: 'privileges',
+        itemPath: 'privileges',
+      }],
+    },
+  })
+  const ITEMS_WITH_PRIVILEGE = [
+    { _id: '1', privilege: 'first' },
+    { _id: '2', privilege: 'second' },
+  ]
+  const ITEMS_WITH_PRIVILEGES = [
+    { _id: '1', privileges: ['first'] },
+    { _id: '2', privileges: ['first', 'second'] },
+    { _id: '3', privileges: ['third'] },
+  ]
+  const makeItemsInPrivilegeService = () => {
+    const createItem = (item) => broker.call('item-must-have-privilege.create', item)
+
+    return ITEMS_WITH_PRIVILEGE.reduce(
+      (r, item) => r.then(() => createItem(item)),
+      Promise.resolve()
+    )
+  }
+  const makeItemsInPrivilegesService = () => {
+    const createItem = (item) => broker.call('item-must-have-privileges.create', item)
+
+    return ITEMS_WITH_PRIVILEGES.reduce(
+      (r, item) => r.then(() => createItem(item)),
+      Promise.resolve()
+    )
+  }
   // singileton
   broker.createService({
     name: 'mock-singleton-db',
@@ -226,6 +274,8 @@ describe('Test "db-utils" mixin', () => {
         makeItemsInMustBeOwnerService(),
         makeItemsInOwnerItemsService(),
         makeItemsInOwnersService(),
+        makeItemsInPrivilegeService(),
+        makeItemsInPrivilegesService(),
       ]))
   })
   afterAll(() => broker.stop())
@@ -1189,4 +1239,109 @@ describe('Test "db-utils" mixin', () => {
     })
 
   })
+
+  describe('can check item privileges with arrays', () => {
+
+    const mockCallByApiWithPayload = (action, params, payload) => {
+      return broker.call(action, params, {
+        meta: {
+          calledByApi: true,
+          decodedToken: payload,
+        }
+      })
+    }
+    const createUserPayload = (privileges, rest) => ({
+      _id: 'xxx-xxx-xxx',
+      privileges: privileges,
+      ...rest
+    })
+
+    it('can find all items that matched privilege from token (user have 1 valid privilege)', () => {
+      expect.assertions(1)
+      
+      const payload = createUserPayload(['first'])
+
+      return mockCallByApiWithPayload('item-must-have-privilege.find', {}, payload)
+        .then((data) => {
+          expect(data).toEqual(ITEMS_WITH_PRIVILEGE.filter((item) => item.privilege === 'first'))
+        })
+    })
+
+    it('can find all items that matched privilege from token (user have 1 valid and 1 invalid privilege)', () => {
+      expect.assertions(1)
+      
+      const payload = createUserPayload(['first', 'other'])
+
+      return mockCallByApiWithPayload('item-must-have-privilege.find', {}, payload)
+        .then((data) => {
+          expect(data).toEqual(ITEMS_WITH_PRIVILEGE.filter((item) => item.privilege === 'first'))
+        })
+    })
+
+    it('can find all items that matched privilege from token (user have 2 valid privileges)', () => {
+      expect.assertions(1)
+      
+      const payload = createUserPayload(['first', 'second'])
+
+      return mockCallByApiWithPayload('item-must-have-privilege.find', {}, payload)
+        .then((data) => {
+          expect(data).toEqual(ITEMS_WITH_PRIVILEGE)
+        })
+    })
+
+    it('can find all items that matched privilege from token (array vs one privilege in token)', () => {
+      expect.assertions(1)
+      
+      const payload = createUserPayload(['first'])
+
+      return mockCallByApiWithPayload('item-must-have-privileges.find', {}, payload)
+        .then((data) => {
+          expect(data).toEqual(ITEMS_WITH_PRIVILEGES.filter((item) => item.privileges.includes('first')))
+        })
+    })
+
+    // eslint-disable-next-line max-len
+    it('can find all items that matched privilege from token (array vs 2 privileges in token 1 valid 1 invalid)', () => {
+      expect.assertions(1)
+      
+      const payload = createUserPayload(['first', 'other'])
+
+      return mockCallByApiWithPayload('item-must-have-privileges.find', {}, payload)
+        .then((data) => {
+          expect(data).toEqual(ITEMS_WITH_PRIVILEGES.filter((item) => item.privileges.includes('first')))
+        })
+    })
+
+    it('can find all items that matched privilege from token (array vs 2 privileges in token both valid)', () => {
+      expect.assertions(1)
+      
+      const payload = createUserPayload(['first', 'second'])
+
+      return mockCallByApiWithPayload('item-must-have-privileges.find', {}, payload)
+        .then((data) => {
+          expect(data).toEqual(
+            ITEMS_WITH_PRIVILEGES.filter(
+              (item) => item.privileges.find((privilege) => ['first', 'second'].includes(privilege))
+            )
+          )
+        })
+    })
+
+    it('can find all items that matched privilege from token (array vs 3 privileges in token all valid)', () => {
+      expect.assertions(1)
+      
+      const payload = createUserPayload(['first', 'second', 'third'])
+
+      return mockCallByApiWithPayload('item-must-have-privileges.find', {}, payload)
+        .then((data) => {
+          expect(data).toEqual(
+            ITEMS_WITH_PRIVILEGES.filter(
+              (item) => item.privileges.find((privilege) => ['first', 'second', 'third'].includes(privilege))
+            )
+          )
+        })
+    })
+
+  })
+
 })
