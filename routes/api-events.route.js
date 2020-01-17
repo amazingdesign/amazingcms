@@ -10,6 +10,7 @@ module.exports = {
     'events.get',
     'events.create',
     'events.update',
+    'events.remove',
   ],
   bodyParsers: {
     json: true,
