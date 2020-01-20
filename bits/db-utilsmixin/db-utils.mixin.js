@@ -388,12 +388,7 @@ module.exports = {
 
             this.logger.info(`Added ${JSON.stringify(queryToAdd)} to filter query!`)
 
-            const populate = (
-              queryByPopulation ?
-                Object.keys(this.settings.populates || {})
-                :
-                undefined
-            )
+            const populate = Object.keys(this.settings.populates || {})
 
             ctx.params = {
               ...ctx.params,
