@@ -337,6 +337,14 @@ module.exports = {
     async itemPrivilegesChecker(ctx) {
       if (!this.settings.itemPrivileges) return ctx
 
+      this.logger.info('Asked to filter by item privileges')
+
+      if (!ctx.meta.calledByApi) {
+        this.logger.info('Not called by API. Skipping!')
+
+        return
+      }
+
       if (
         !Array.isArray(this.settings.itemPrivileges) ||
         this.settings.itemPrivileges.length === 0
@@ -344,8 +352,6 @@ module.exports = {
         this.logger.warn('Service has empty or invalid itemPrivileges! Cant filter!')
         return ctx
       }
-
-      this.logger.info('Asked to filter by item privileges')
 
       const actionName = ctx.action.rawName
 
@@ -411,19 +417,21 @@ module.exports = {
                 undefined
             )
 
-            const item = await this.broker.call(`${serviceName}.get`, { id, populate })
+            const itemTmp = await this.broker.call(`${serviceName}.get`, { id, populate })
+            // it can be array for get with multiple ids which is possible
+            const item = itemTmp[0] || itemTmp
 
             const tokenPathValue = _.get(decodedToken, tokenPath)
             const itemPathValue = _.get(item, itemPath)
 
             const tokenPathValueIsOrIncludesItemPathValue = (
-              Array.isArray(tokenPathValue) && !Array.isArray(itemPathValue) ?
+              (Array.isArray(tokenPathValue) && !Array.isArray(itemPathValue)) ?
                 tokenPathValue.includes(itemPathValue)
                 :
-                !Array.isArray(tokenPathValue) && Array.isArray(itemPathValue) ?
+                (!Array.isArray(tokenPathValue) && Array.isArray(itemPathValue)) ?
                   itemPathValue.includes(tokenPathValue)
                   :
-                  Array.isArray(tokenPathValue) && Array.isArray(itemPathValue) ?
+                  (Array.isArray(tokenPathValue) && Array.isArray(itemPathValue)) ?
                     tokenPathValue.find((tokenPathItem) => itemPathValue.includes(tokenPathItem))
                     :
                     itemPathValue === tokenPathValue

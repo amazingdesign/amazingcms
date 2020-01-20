@@ -225,13 +225,13 @@ describe('Test "db-utils" mixin', () => {
     },
   })
   const ITEMS_WITH_PRIVILEGE = [
-    { _id: '1', privilege: 'first' },
-    { _id: '2', privilege: 'second' },
+    { order: '1', privilege: 'first' },
+    { order: '2', privilege: 'second' },
   ]
   const ITEMS_WITH_PRIVILEGES = [
-    { _id: '1', privileges: ['first'] },
-    { _id: '2', privileges: ['first', 'second'] },
-    { _id: '3', privileges: ['third'] },
+    { order: '1', privileges: ['first'] },
+    { order: '2', privileges: ['first', 'second'] },
+    { order: '3', privileges: ['third'] },
   ]
   const makeItemsInPrivilegeService = () => {
     const createItem = (item) => broker.call('item-must-have-privilege.create', item)
@@ -1242,6 +1242,10 @@ describe('Test "db-utils" mixin', () => {
 
   describe('can check item privileges with arrays', () => {
 
+    const filterIds = (array) => array && array.map((item) => ({
+      ...item,
+      _id: undefined
+    }))
     const mockCallByApiWithPayload = (action, params, payload) => {
       return broker.call(action, params, {
         meta: {
@@ -1258,88 +1262,157 @@ describe('Test "db-utils" mixin', () => {
 
     it('can find all items that matched privilege from token (user have 1 valid privilege)', () => {
       expect.assertions(1)
-      
+
       const payload = createUserPayload(['first'])
 
-      return mockCallByApiWithPayload('item-must-have-privilege.find', {}, payload)
+      return mockCallByApiWithPayload('item-must-have-privilege.find', { sort: 'order' }, payload)
         .then((data) => {
-          expect(data).toEqual(ITEMS_WITH_PRIVILEGE.filter((item) => item.privilege === 'first'))
+          expect(filterIds(data)).toEqual(
+            filterIds(ITEMS_WITH_PRIVILEGE)
+              .filter((item) => item.privilege === 'first')
+          )
         })
+    })
+
+    it('find none when to find all items without privileges', () => {
+      expect.assertions(1)
+
+      const payload = createUserPayload([])
+
+      return mockCallByApiWithPayload('item-must-have-privilege.find', { sort: 'order' }, payload)
+        .then((data) => expect(data.length).toBe(0))
+    })
+
+    it('find none when to find all items with invalid privileges', () => {
+      expect.assertions(1)
+
+      const payload = createUserPayload(['invalid'])
+
+      return mockCallByApiWithPayload('item-must-have-privilege.find', { sort: 'order' }, payload)
+        .then((data) => expect(data.length).toBe(0))
     })
 
     it('can find all items that matched privilege from token (user have 1 valid and 1 invalid privilege)', () => {
       expect.assertions(1)
-      
+
       const payload = createUserPayload(['first', 'other'])
 
-      return mockCallByApiWithPayload('item-must-have-privilege.find', {}, payload)
+      return mockCallByApiWithPayload('item-must-have-privilege.find', { sort: 'order' }, payload)
         .then((data) => {
-          expect(data).toEqual(ITEMS_WITH_PRIVILEGE.filter((item) => item.privilege === 'first'))
+          expect(filterIds(data)).toEqual(
+            filterIds(ITEMS_WITH_PRIVILEGE)
+              .filter((item) => item.privilege === 'first')
+          )
         })
     })
 
     it('can find all items that matched privilege from token (user have 2 valid privileges)', () => {
       expect.assertions(1)
-      
+
       const payload = createUserPayload(['first', 'second'])
 
-      return mockCallByApiWithPayload('item-must-have-privilege.find', {}, payload)
+      return mockCallByApiWithPayload('item-must-have-privilege.find', { sort: 'order' }, payload)
         .then((data) => {
-          expect(data).toEqual(ITEMS_WITH_PRIVILEGE)
+          expect(filterIds(data)).toEqual(filterIds(ITEMS_WITH_PRIVILEGE))
         })
     })
 
     it('can find all items that matched privilege from token (array vs one privilege in token)', () => {
       expect.assertions(1)
-      
+
       const payload = createUserPayload(['first'])
 
-      return mockCallByApiWithPayload('item-must-have-privileges.find', {}, payload)
+      return mockCallByApiWithPayload('item-must-have-privileges.find', { sort: 'order' }, payload)
         .then((data) => {
-          expect(data).toEqual(ITEMS_WITH_PRIVILEGES.filter((item) => item.privileges.includes('first')))
+          expect(filterIds(data)).toEqual(
+            filterIds(ITEMS_WITH_PRIVILEGES)
+              .filter((item) => item.privileges.includes('first'))
+          )
         })
     })
 
     // eslint-disable-next-line max-len
     it('can find all items that matched privilege from token (array vs 2 privileges in token 1 valid 1 invalid)', () => {
       expect.assertions(1)
-      
+
       const payload = createUserPayload(['first', 'other'])
 
-      return mockCallByApiWithPayload('item-must-have-privileges.find', {}, payload)
+      return mockCallByApiWithPayload('item-must-have-privileges.find', { sort: 'order' }, payload)
         .then((data) => {
-          expect(data).toEqual(ITEMS_WITH_PRIVILEGES.filter((item) => item.privileges.includes('first')))
+          expect(filterIds(data)).toEqual(
+            filterIds(ITEMS_WITH_PRIVILEGES)
+              .filter((item) => item.privileges.includes('first'))
+          )
         })
     })
 
     it('can find all items that matched privilege from token (array vs 2 privileges in token both valid)', () => {
       expect.assertions(1)
-      
+
       const payload = createUserPayload(['first', 'second'])
 
-      return mockCallByApiWithPayload('item-must-have-privileges.find', {}, payload)
+      return mockCallByApiWithPayload('item-must-have-privileges.find', { sort: 'order' }, payload)
         .then((data) => {
-          expect(data).toEqual(
-            ITEMS_WITH_PRIVILEGES.filter(
-              (item) => item.privileges.find((privilege) => ['first', 'second'].includes(privilege))
-            )
+          expect(filterIds(data)).toEqual(
+            filterIds(ITEMS_WITH_PRIVILEGES)
+              .filter(
+                (item) => item.privileges.find((privilege) => ['first', 'second'].includes(privilege))
+              )
           )
         })
     })
 
     it('can find all items that matched privilege from token (array vs 3 privileges in token all valid)', () => {
       expect.assertions(1)
-      
+
       const payload = createUserPayload(['first', 'second', 'third'])
 
-      return mockCallByApiWithPayload('item-must-have-privileges.find', {}, payload)
+      return mockCallByApiWithPayload('item-must-have-privileges.find', { sort: 'order' }, payload)
         .then((data) => {
-          expect(data).toEqual(
-            ITEMS_WITH_PRIVILEGES.filter(
-              (item) => item.privileges.find((privilege) => ['first', 'second', 'third'].includes(privilege))
-            )
+          expect(filterIds(data)).toEqual(
+            filterIds(ITEMS_WITH_PRIVILEGES)
+              .filter(
+                (item) => item.privileges.find((privilege) => ['first', 'second', 'third'].includes(privilege))
+              )
           )
         })
+    })
+
+    it('can get item that matched privilege from token (array vs one privilege in token)', () => {
+      expect.assertions(1)
+
+      const payload = createUserPayload(['first'])
+
+      return mockCallByApiWithPayload('item-must-have-privileges.find', {}, payload)
+        .then((data) => data.find((item) => item.order === '1'))
+        .then(({ _id }) => mockCallByApiWithPayload('item-must-have-privileges.get', { id: _id }, payload))
+        .then((data) => {
+          expect(filterIds([data])).toEqual(filterIds(ITEMS_WITH_PRIVILEGES).filter((item) => item.order === '1'))
+        })
+    })
+
+    it('fails on try to get item without privileges (array vs one privilege in token)', () => {
+      expect.assertions(2)
+
+      const validPayload = createUserPayload(['first'])
+      const inValidPayload = createUserPayload([])
+
+      return mockCallByApiWithPayload('item-must-have-privileges.find', {}, validPayload)
+        .then((data) => data.find((item) => item.order === '1'))
+        .then(({ _id }) => mockCallByApiWithPayload('item-must-have-privileges.get', { id: _id }, inValidPayload))
+        .catch((error) => {
+          expect(error).toBeInstanceOf(MoleculerError)
+          expect(error.message).toBe('User cant perform that action! Fail on filter rule for $ALL_AUTHENTICATED!')
+        })
+    })
+
+    it('can count items that matched privilege from token (array vs one privilege in token)', () => {
+      expect.assertions(1)
+
+      const payload = createUserPayload(['first'])
+
+      return mockCallByApiWithPayload('item-must-have-privileges.count', {}, payload)
+        .then((data) => expect(data).toBe(2))
     })
 
   })
