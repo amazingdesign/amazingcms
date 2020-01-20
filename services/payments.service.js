@@ -35,6 +35,7 @@ module.exports = {
       const {
         orderId,
         method = this.settings.defaultMethod,
+        customer
       } = ctx.params
 
       if (!orderId) throw Error('You must specify orderId!')
@@ -49,7 +50,7 @@ module.exports = {
 
       switch (method) {
         case 'tpay':
-          return this.createPaymentByTpay(amount, orderId)
+          return this.createPaymentByTpay(amount, orderId, customer)
         default:
           return { redirectURL: this.settings.returnURLFailure }
       }
@@ -97,7 +98,7 @@ module.exports = {
         merchant_description: this.settings.sellerName,
         return_url: this.settings.returnURLSuccess,
         return_error_url: this.settings.returnURLFailure,
-        name: (customer.firstName + customer.lastName) || '',
+        name: customer.name || (customer.firstName + customer.lastName) || '',
         email: customer.email || '',
       }
 
