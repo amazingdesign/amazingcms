@@ -110,7 +110,7 @@ module.exports = {
 
       const call = (...all) => this.broker.call(...all)
 
-      const context = vm.createContext({ call, payload: JSON.parse(JSON.stringify(payload)) })
+      const context = vm.createContext({ call, payload: JSON.parse(JSON.stringify(payload)), axios: require('axios') })
 
       return script.runInContext(context)
     },
