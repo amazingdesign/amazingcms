@@ -45,6 +45,7 @@ module.exports = {
 
           ctx.meta.$responseType = contentType
           ctx.meta.$responseHeaders = {
+            'Cache-Control': 'max-age=31557600', // cache for year
             'Content-Type': contentType,
             'Content-Disposition': `inline; filename="${filenameSlug}"`
           }
