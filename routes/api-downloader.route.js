@@ -12,5 +12,9 @@ module.exports = {
       calledByApi: true,
     }
   },
+  onBeforeCall(ctx, route, req, res) {
+    // Set request headers to context meta
+    ctx.meta.headers = req.headers
+  },
   mappingPolicy: 'restrict',
 }
