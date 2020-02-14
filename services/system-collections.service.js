@@ -18,7 +18,8 @@ module.exports = {
       'events',
       'events-log',
       'collections',
-      'uploader'
+      'uploader',
+      'mux'
     ]
   },
 
