@@ -77,6 +77,7 @@ module.exports = {
       'icon',
       'tableFields',
       'schema',
+      'afterHook',
       'populateSchema',
       'requiredPrivileges',
       'itemPrivileges',
@@ -122,6 +123,7 @@ module.exports = {
           uniforms: { component: 'ListFieldReorder' }
         },
         schema: { $ref: 'http://json-schema.org/draft-07/schema#' },
+        afterHook: { type: 'string' },
         populateSchema: {
           type: 'object',
           properties: {}
@@ -198,6 +200,7 @@ module.exports = {
               uniforms: { component: 'ListFieldReorder' }
             },
             schema: { type: 'object', properties: {}, uniforms: { component: 'MonacoEditorField', language: 'json' } },
+            afterHook: { type: 'string', uniforms: { component: 'MonacoEditorField' } },
             populateSchema: {
               type: 'object',
               properties: {},

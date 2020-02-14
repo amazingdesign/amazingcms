@@ -1,3 +1,4 @@
+const vm = require('vm')
 const DbService = require('../db/main')
 
 const { findFirstLevelSlugFields } = require('@bit/amazingdesign.uniforms.find-first-level-slug-fields')
@@ -16,6 +17,9 @@ const makeCollectionService = collectionData => {
       before: {
         create: 'throwWhenSlugsExists',
         update: 'throwWhenSlugsExists',
+      },
+      after: {
+        '*': 'executeAfterHook'
       }
     },
 
@@ -37,6 +41,7 @@ const makeCollectionService = collectionData => {
       entityValidator: collectionData.validator,
       populates: collectionData.populateSchema,
       maxPageSize: Number.MAX_SAFE_INTEGER,
+      afterHook: collectionData.afterHook,
     },
 
     methods: {
@@ -50,6 +55,30 @@ const makeCollectionService = collectionData => {
         const checkPromises = slugs.map(({ fieldName }) => this.throwWhenFieldExists(fieldName)(ctx))
 
         return Promise.all(checkPromises).then(() => ctx)
+      },
+      executeAfterHook(ctx, res) {
+        this.logger.debug('Entering after hook!')
+
+        const afterHook = this.settings.afterHook
+
+        if(!this.settings.afterHook) return res
+
+        this.logger.debug('Firing after hook!')
+ 
+        const script = new vm.Script(`(() => { ${afterHook} })()`)
+
+        const call = (...all) => this.broker.call(...all)
+
+        const context = vm.createContext({
+          call,
+          res: JSON.parse(JSON.stringify(res)),
+          axios: require('axios'),
+          actionName: ctx.action.rawName,
+          serviceName: ctx.action.name.split('.')[0],
+          ctxParams: JSON.parse(JSON.stringify(ctx.params)),
+        })
+
+        return script.runInContext(context)
       },
     }
   }
