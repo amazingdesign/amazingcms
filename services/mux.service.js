@@ -2,6 +2,7 @@
 'use strict'
 
 const _ = require('lodash')
+const jwt = require('jsonwebtoken')
 
 const DbService = require('../db/main')
 const DbUtilsMixin = require('../bits/db-utilsmixin')
@@ -13,6 +14,8 @@ const { getConfigOrFail } = require('@bit/amazingdesign.utils.config')
 const Mux = require('@mux/mux-node')
 
 const API_URL = getConfigOrFail('API_URL')
+const MUX_PRIVATE_KEY = getConfigOrFail('MUX_PRIVATE_KEY')
+const MUX_KID = getConfigOrFail('MUX_KID')
 const { Video } = new Mux()
 
 module.exports = {
@@ -38,6 +41,7 @@ module.exports = {
       update: ['$NONE'],
       create: ['$NONE'],
       remove: ['$NONE'],
+      token: ['$ALL_AUTHENTICATED'],
     },
     maxPageSize: Number.MAX_SAFE_INTEGER
   },
@@ -86,7 +90,7 @@ module.exports = {
         displayName: 'MUX Videos',
         tableFields: [
           { label: 'File name', name: 'name' },
-          { label: 'Playback id', name: 'lastEventData.playback_ids.0.id', columnRenderType: 'chips',},
+          { label: 'Playback id', name: 'lastEventData.playback_ids.0.id', columnRenderType: 'chips', },
           {
             label: 'Latest status', name: 'lastEventType', columnRenderType: 'chips-lookup', lookup: {
               'video.upload.asset_created': 'Upload - asset created',
@@ -148,6 +152,36 @@ module.exports = {
       this.logger.warn(`mux-service heard unknown event - ${eventType}`)
       this.logger.warn(eventData)
       return
+    },
+    async token(ctx) {
+      const DEFAULT_VALID_TIME = 15 * 60 * 1000
+      const { id, aud = 'v' } = ctx.params
+
+      let validTime = DEFAULT_VALID_TIME
+
+      try {
+        const [item] = await this.broker.call('mux.find', { query: { 'lastEventData.playback_ids.0.id': id } })
+        const durationSeconds = item && item.lastEventData && item.lastEventData.duration
+        const durationMilliseconds = (Number(durationSeconds) * 1000) || 0
+        validTime = DEFAULT_VALID_TIME + durationMilliseconds
+      } catch (error) {
+        this.logger.warn(`Cant find mux video duration when generating token, using default - ${DEFAULT_VALID_TIME}!`)
+      }
+
+      const privateKey = Buffer.from(MUX_PRIVATE_KEY, 'base64').toString('ascii')
+
+      const payload = {
+        sub: id,
+        exp: Date.now() + validTime,
+        kid: MUX_KID,
+        aud
+      }
+
+      const token = jwt.sign(payload, privateKey, { algorithm: 'RS256' })
+
+      this.logger.info(`Generated token for playback url - ${id} valid for - ${validTime}!`)
+
+      return token
     }
   },
 

@@ -2,10 +2,11 @@ module.exports = {
   authorization: true,
   path: '/api/mux',
   aliases: {
-    'POST /upload-url': 'mux.createUploadUrl',
-    'POST /webhooks': 'mux.webhooks',
     'REST /': 'mux',
     'GET :id': 'mux.get',
+    'POST /upload-url': 'mux.createUploadUrl',
+    'POST /webhooks': 'mux.webhooks',
+    'GET /token/:id': 'mux.token',
   },
   whitelist: [
     'mux.list',
@@ -15,6 +16,7 @@ module.exports = {
     'mux.update',
     'mux.createUploadUrl',
     'mux.webhooks',
+    'mux.token',
   ],
   bodyParsers: {
     json: true,
