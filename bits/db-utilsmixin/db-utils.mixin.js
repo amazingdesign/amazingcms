@@ -212,7 +212,11 @@ module.exports = {
         throw new MoleculerError(message)
       }
 
-      const additionalPrivileges = ctx.meta.decodedToken ? ['$ALL_AUTHENTICATED'] : []
+      const userWasNotAuthenticated = (
+        !privilegesFromToken ||
+        (privilegesFromToken.length === 1 && privilegesFromToken[0] === '$ALL')
+      )
+      const additionalPrivileges = userWasNotAuthenticated ? [] : ['$ALL_AUTHENTICATED']
 
       const systemPrivileges = ctx.meta.privileges || []
 
