@@ -172,7 +172,7 @@ module.exports = {
 
       const payload = {
         sub: id,
-        exp: Date.now() + validTime,
+        exp: (Date.now() + validTime) / 1000,
         kid: MUX_KID,
         aud
       }
