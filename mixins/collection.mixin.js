@@ -78,7 +78,6 @@ const makeCollectionService = collectionData => {
           ctxParams: JSON.parse(JSON.stringify(ctx.params)),
         })
 
-        return script.runInContext(context)
       },
     }
   }

@@ -4,6 +4,7 @@ const { ServiceBroker } = require('moleculer')
 const Validator = require('moleculer-json-schema-validator')
 
 const OrdersService = require('../services/orders.service')
+const ActionsService = require('../services/actions.service')
 
 describe('Test "orders" service', () => {
   const mockProducts = {
@@ -44,6 +45,7 @@ describe('Test "orders" service', () => {
     }
   }
   const broker = new ServiceBroker({ logger: false, validator: new Validator() })
+  broker.createService(ActionsService)
   broker.createService(OrdersService)
   broker.createService(MockProductsService)
   broker.createService(MockBooksService)
@@ -82,7 +84,7 @@ describe('Test "orders" service', () => {
     return broker.call('orders.create', { basket })
       .then(order => expect(order.orderTotal).toBe(0))
   })
-  
+
   it('can calculate orderTotal for 1-item basket with quantity', () => {
     expect.assertions(1)
 
@@ -116,17 +118,53 @@ describe('Test "orders" service', () => {
     return broker.call('orders.create', { basket })
       .then(order => expect(order.orderTotal).toBe(0))
   })
- 
+
   it('can calculate orderTotal for 2-items basket with different collections products', () => {
     expect.assertions(1)
 
     const basket = [
-      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products'},
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
       { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
     ]
 
     return broker.call('orders.create', { basket })
       .then(order => expect(order.orderTotal).toBe(170))
+  })
+
+  it('can populate products in basket', () => {
+    expect.assertions(1)
+
+    const basket = [
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5dd679590d02f941837773ac', collectionName: 'products' },
+    ]
+
+    return broker.call('orders.create', { basket })
+      .then(({ _id }) =>  broker.call('orders.get', { id: _id, populate: ['basket'] }))
+      .then((order) => (
+        expect(order.basket).toEqual([
+          { ...basket[0], name: 'Mouse', price: 150 },
+          { ...basket[1], name: 'Phone', price: 1000  },
+        ])
+      ))
+  })
+
+  it('can populate products in basket for multiple collections', () => {
+    expect.assertions(1)
+
+    const basket = [
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
+    ]
+
+    return broker.call('orders.create', { basket })
+      .then(({ _id }) =>  broker.call('orders.get', { id: _id, populate: ['basket'] }))
+      .then((order) => (
+        expect(order.basket).toEqual([
+          { ...basket[0], name: 'Mouse', price: 150 },
+          { ...basket[1], name: 'Harry Potter', price: 20 },
+        ])
+      ))
   })
 
 })

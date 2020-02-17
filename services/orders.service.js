@@ -6,6 +6,8 @@ const DbUtilsMixin = require('../bits/db-utilsmixin')
 const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
 const DbArchiveMixin = require('../bits/db-archive.mixin')
 
+const PRODUCT_FIELDS = ['price', 'currency', 'name', 'photo', 'published', 'description']
+
 module.exports = {
   name: 'orders',
 
@@ -76,7 +78,29 @@ module.exports = {
           type: 'object',
         }
       }
-    }
+    },
+    populates: {
+      basket: function (ids, items, rule, ctx) {
+        const populationItemsPromises = ids.map(({ id, collectionName, quantity }) => {
+          return this.broker.call(
+            'actions.get',
+            { id, fields: PRODUCT_FIELDS },
+            { meta: { collectionName } }
+          )
+            .then((product) => ({ ...product, id, collectionName, quantity }))
+            .catch(() => ({ id, collectionName, quantity }))
+        })
+
+        return Promise.all(populationItemsPromises)
+          .then((populationItems) => {
+            items.forEach((item) => {
+              item.basket = item.basket.map((basketItem) => (
+                populationItems.find((populationItem) => populationItem.id === basketItem.id)
+              ))
+            })
+          })
+      },
+    },
   },
 
   actions: {
