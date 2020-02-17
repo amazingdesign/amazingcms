@@ -153,7 +153,31 @@ module.exports = {
         })
       }
     },
+    getAllPrivileges(ctx) {
+      const privilegesFromToken = (
+        ctx.meta &&
+        ctx.meta.decodedToken &&
+        ctx.meta.decodedToken.privileges
+      ) || []
 
+      if (!Array.isArray(privilegesFromToken)) {
+        const message = `Privileges in token should be an array! Found ${typeof privilegesFromToken} instead.`
+        this.logger.error(message)
+        throw new MoleculerError(message)
+      }
+
+      const userWasNotAuthenticated = (
+        !privilegesFromToken ||
+        (privilegesFromToken.length === 1 && privilegesFromToken[0] === '$ALL')
+      )
+      const additionalPrivileges = userWasNotAuthenticated ? [] : ['$ALL_AUTHENTICATED']
+
+      const systemPrivileges = ctx.meta.privileges || []
+
+      const allPrivileges = additionalPrivileges.concat(systemPrivileges).concat(privilegesFromToken)
+
+      return allPrivileges
+    },
     privilegeChecker(ctx) {
       this.logger.info('Asked to check privileges')
 
@@ -200,27 +224,7 @@ module.exports = {
         return
       }
 
-      const privilegesFromToken = (
-        ctx.meta &&
-        ctx.meta.decodedToken &&
-        ctx.meta.decodedToken.privileges
-      ) || []
-
-      if (!Array.isArray(privilegesFromToken)) {
-        const message = `Privileges in token should be an array! Found ${typeof privilegesToCheck} instead.`
-        this.logger.error(message)
-        throw new MoleculerError(message)
-      }
-
-      const userWasNotAuthenticated = (
-        !privilegesFromToken ||
-        (privilegesFromToken.length === 1 && privilegesFromToken[0] === '$ALL')
-      )
-      const additionalPrivileges = userWasNotAuthenticated ? [] : ['$ALL_AUTHENTICATED']
-
-      const systemPrivileges = ctx.meta.privileges || []
-
-      const allPrivileges = additionalPrivileges.concat(systemPrivileges).concat(privilegesFromToken)
+      const allPrivileges = this.getAllPrivileges(ctx)
 
       const matchedPrivileges = privilegesToCheck.filter(
         privilegeToCheck => allPrivileges.includes(privilegeToCheck)

@@ -44,7 +44,10 @@ describe('Test "orders" service', () => {
       }
     }
   }
-  const broker = new ServiceBroker({ logger: false, validator: new Validator() })
+  const broker = new ServiceBroker({
+    logger: false,
+    validator: new Validator()
+  })
   broker.createService(ActionsService)
   broker.createService(OrdersService)
   broker.createService(MockProductsService)
@@ -140,11 +143,11 @@ describe('Test "orders" service', () => {
     ]
 
     return broker.call('orders.create', { basket })
-      .then(({ _id }) =>  broker.call('orders.get', { id: _id, populate: ['basket'] }))
+      .then(({ _id }) => broker.call('orders.get', { id: _id, populate: ['basket'] }))
       .then((order) => (
         expect(order.basket).toEqual([
           { ...basket[0], name: 'Mouse', price: 150 },
-          { ...basket[1], name: 'Phone', price: 1000  },
+          { ...basket[1], name: 'Phone', price: 1000 },
         ])
       ))
   })
@@ -158,13 +161,57 @@ describe('Test "orders" service', () => {
     ]
 
     return broker.call('orders.create', { basket })
-      .then(({ _id }) =>  broker.call('orders.get', { id: _id, populate: ['basket'] }))
+      .then(({ _id }) => broker.call('orders.get', { id: _id, populate: ['basket'] }))
       .then((order) => (
         expect(order.basket).toEqual([
           { ...basket[0], name: 'Mouse', price: 150 },
           { ...basket[1], name: 'Harry Potter', price: 20 },
         ])
       ))
+  })
+
+  it('can get order but no user related data if do not have permissions to list all data', () => {
+    expect.assertions(1)
+
+    const basket = [
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
+    ]
+    const additionalInfo = { address: 'Secret Street 123' }
+    const buyerEmail = 'example@example.com'
+
+    return broker.call('orders.create', { basket, additionalInfo, buyerEmail })
+      .then((wholeOrder) => {
+        return broker.call('orders.get', { id: wholeOrder._id })
+          .then((orderFromGet) => (
+            expect(orderFromGet).toEqual({
+              ...wholeOrder,
+              additionalInfo: undefined,
+              buyerEmail: undefined,
+            })
+          ))
+      })
+  })
+
+  it('can get order with user related data if have permissions to list all data', () => {
+    expect.assertions(1)
+
+    const metaLikeSuperAdmin = {
+      meta: { decodedToken: { privileges: ['superadmin'] } }
+    }
+
+    const basket = [
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
+    ]
+    const additionalInfo = { address: 'Secret Street 123' }
+    const buyerEmail = 'example@example.com'
+
+    return broker.call('orders.create', { basket, additionalInfo, buyerEmail })
+      .then((wholeOrder) => {
+        return broker.call('orders.get', { id: wholeOrder._id }, metaLikeSuperAdmin)
+          .then((orderFromGet) => expect(orderFromGet).toEqual(wholeOrder))
+      })
   })
 
 })

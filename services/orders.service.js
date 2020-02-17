@@ -28,6 +28,9 @@ module.exports = {
         'calculateOrderTotal'
       ]
     },
+    after: {
+      get: 'removeBuyerRelatedDataIfNotAuthorizedToFind'
+    }
   },
 
   settings: {
@@ -36,9 +39,9 @@ module.exports = {
       list: ['superadmin'],
       create: [],
       insert: ['superadmin'],
-      get: ['superadmin'],
+      get: [],
       update: ['superadmin'],
-      remove: ['$NONE'],
+      remove: ['superadmin'],
       getSchema: ['superadmin'],
     },
     fields: [
@@ -181,6 +184,21 @@ module.exports = {
           return ctx
         })
     },
+    removeBuyerRelatedDataIfNotAuthorizedToFind(ctx, res) {
+      const privilegesToCheck = this.settings.requiredPrivileges.list
+      const allPrivileges = this.getAllPrivileges(ctx)
+      const matchedPrivileges = privilegesToCheck.filter(
+        privilegeToCheck => allPrivileges.includes(privilegeToCheck)
+      )
+
+      if (matchedPrivileges.length !== 0) {
+        return res
+      }
+
+      return this.removeFieldFromResponses('buyerEmail')(ctx,
+        this.removeFieldFromResponses('additionalInfo')(ctx, res)
+      )
+    }
   }
 
 }
