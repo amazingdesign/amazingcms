@@ -26,7 +26,8 @@ module.exports = {
       create: [
         'addFirstStatus',
         'calculateOrderTotal'
-      ]
+      ],
+      update: 'onlyCreatedCanBeUpdated',
     },
     after: {
       get: 'removeBuyerRelatedDataIfNotAuthorizedToFind'
@@ -37,10 +38,10 @@ module.exports = {
     requiredPrivileges: {
       count: ['superadmin'],
       list: ['superadmin'],
-      create: [],
       insert: ['superadmin'],
+      create: [],
       get: [],
-      update: ['superadmin'],
+      update: [],
       remove: ['superadmin'],
       getSchema: ['superadmin'],
     },
@@ -198,6 +199,17 @@ module.exports = {
       return this.removeFieldFromResponses('buyerEmail')(ctx,
         this.removeFieldFromResponses('additionalInfo')(ctx, res)
       )
+    },
+    async onlyCreatedCanBeUpdated(ctx) {
+      const { params: { id } } = ctx
+
+      const item = await this.broker.call('orders.get', { id })
+
+      if(item.status !== 'created'){
+        throw new Error('Only orders with "created" status can be updated!')
+      }
+
+      return ctx
     }
   }
 

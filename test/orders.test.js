@@ -196,7 +196,7 @@ describe('Test "orders" service', () => {
   it('can get order with user related data if have permissions to list all data', () => {
     expect.assertions(1)
 
-    const metaLikeSuperAdmin = {
+    const metaWithSuperAdminPrivileges = {
       meta: { decodedToken: { privileges: ['superadmin'] } }
     }
 
@@ -209,9 +209,40 @@ describe('Test "orders" service', () => {
 
     return broker.call('orders.create', { basket, additionalInfo, buyerEmail })
       .then((wholeOrder) => {
-        return broker.call('orders.get', { id: wholeOrder._id }, metaLikeSuperAdmin)
+        return broker.call('orders.get', { id: wholeOrder._id }, metaWithSuperAdminPrivileges)
           .then((orderFromGet) => expect(orderFromGet).toEqual(wholeOrder))
       })
+  })
+
+  it('can update order when it is create status', () => {
+    expect.assertions(2)
+
+    const basket = [
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
+    ]
+    const additionalInfo = { address: 'Secret Street 123' }
+    const buyerEmail = 'example@example.com'
+    const order = { basket, additionalInfo, buyerEmail }
+
+    return broker.call('orders.create', order)
+      .then((wholeOrder) => broker.call(
+        'orders.update',
+        { id: wholeOrder._id, buyerEmail: 'updated@example.com', status: 'updated' }
+      ).then((updatedOrder) => ({ wholeOrder, updatedOrder })))
+      .then(({ wholeOrder, updatedOrder }) => {
+        expect(updatedOrder).toEqual({
+          ...wholeOrder,
+          updatedAt: expect.any(Date),
+          buyerEmail: 'updated@example.com', status: 'updated'
+        })
+        return updatedOrder
+      })
+      .then((updatedOrder) => broker.call(
+        'orders.update',
+        { id: updatedOrder._id, buyerEmail: 'updated-x-2@example.com' }
+      ))
+      .catch((error) => expect(error.message).toBe('Only orders with "created" status can be updated!'))
   })
 
 })
