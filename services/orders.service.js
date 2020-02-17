@@ -7,6 +7,8 @@ const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
 const DbArchiveMixin = require('../bits/db-archive.mixin')
 
 const PRODUCT_FIELDS = ['price', 'currency', 'name', 'photo', 'published', 'description']
+const ORDER_STATUSES = ['created', 'pending', 'paid', 'packed', 'shipped', 'received', 'done']
+const ORDER_STATUSES_OPTIONS = ORDER_STATUSES.map((status) => ({ label: status, value: status }))
 
 module.exports = {
   name: 'orders',
@@ -76,10 +78,20 @@ module.exports = {
         orderTotal: { type: 'number' },
         status: {
           type: 'string',
-          enum: ['created', 'pending', 'paid', 'packed', 'shipped', 'received', 'done'],
+          options: ORDER_STATUSES_OPTIONS,
         },
         additionalInfo: {
           type: 'object',
+          properties: {
+            name: { type: 'string' },
+            street: { type: 'string' },
+            zip: { type: 'string' },
+            city: { type: 'string' },
+            nip: { type: 'string' },
+            consentMarketing: { type: 'boolean' },
+            consentData: { type: 'boolean' },
+            consentRegulations: { type: 'boolean' },
+          }
         }
       }
     },
@@ -131,14 +143,41 @@ module.exports = {
               },
               uniforms: { component: 'ListFieldReorder' }
             },
+            status: {
+              type: 'string',
+              options: ORDER_STATUSES_OPTIONS,
+              uniforms: { component: 'MuiReactSelectField' }
+            },
+            additionalInfo: {
+              type: 'object',
+              properties: {
+                name: { type: 'string' },
+                street: { type: 'string' },
+                zip: { type: 'string' },
+                city: { type: 'string' },
+                nip: { type: 'string' },
+                consentMarketing: { type: 'boolean' },
+                consentData: { type: 'boolean' },
+                consentRegulations: { type: 'boolean' },
+              }
+            }
           }
         },
         icon: 'fas fa-shopping-basket',
         displayName: 'Orders',
         tableFields: [
-          { label: 'Buyer', name: 'buyerEmail' },
           { label: 'Order total', name: 'orderTotal', columnRenderType: 'currency' },
           { label: 'Status', name: 'status', columnRenderType: 'chips' },
+          { label: 'Email', name: 'buyerEmail' },
+          { label: 'Name', name: 'additionalInfo.name' },
+          { label: 'NIP', name: 'additionalInfo.nip' },
+          { label: 'Street', name: 'additionalInfo.street' },
+          { label: 'Zip code', name: 'additionalInfo.zip' },
+          { label: 'City', name: 'additionalInfo.city' },
+          { label: 'Consent - marketing', name: 'additionalInfo.consentMarketing', columnRenderType: 'boolean-icon' },
+          { label: 'Consent - data', name: 'additionalInfo.consentData', columnRenderType: 'boolean-icon' },
+          // eslint-disable-next-line max-len
+          { label: 'Consent - regulations', name: 'additionalInfo.consentRegulations', columnRenderType: 'boolean-icon' },
           { label: 'ID', name: '_id', columnRenderType: 'chips' },
           { label: 'Created', name: 'createdAt', columnRenderType: 'date-time' },
           { label: 'Updated', name: 'updatedAt', columnRenderType: 'date-time' },
@@ -205,7 +244,7 @@ module.exports = {
 
       const item = await this.broker.call('orders.get', { id })
 
-      if(item.status !== 'created'){
+      if (item.status !== 'created') {
         throw new Error('Only orders with "created" status can be updated!')
       }
 
