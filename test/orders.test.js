@@ -7,6 +7,25 @@ const OrdersService = require('../services/orders.service')
 const ActionsService = require('../services/actions.service')
 
 describe('Test "orders" service', () => {
+  const mockCoupons = {
+    'COUPONNOTACTIVE': { active: false, name: 'COUPON1.33', percentDiscount: 1.33 },
+    'COUPON1.33': { active: true, name: 'COUPON1.33', percentDiscount: 1.33 },
+    'COUPON50': { active: true, name: 'COUPON50', percentDiscount: 50 },
+  }
+  const MockCouponsService = {
+    name: 'coupons',
+    actions: {
+      find(ctx) {
+        const { params: { query: { name } } } = ctx
+
+        const coupon = mockCoupons[name]
+
+        if (!coupon) return []
+
+        return Promise.resolve([coupon])
+      }
+    }
+  }
   const mockProducts = {
     '5dd679590d02f941837773ac': { name: 'Phone', price: 1000 },
     '5dd65b0a0d02f941837773aa': { name: 'Mouse', price: 150 },
@@ -50,6 +69,7 @@ describe('Test "orders" service', () => {
   })
   broker.createService(ActionsService)
   broker.createService(OrdersService)
+  broker.createService(MockCouponsService)
   broker.createService(MockProductsService)
   broker.createService(MockBooksService)
 
@@ -214,35 +234,144 @@ describe('Test "orders" service', () => {
       })
   })
 
-  it('can update order when it is create status', () => {
-    expect.assertions(2)
+  it('do not allow to update order total through API update call', () => {
+    expect.assertions(1)
+
+    const basket = [  // total 150 + 20 = 170
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
+    ]
+    const order = { basket }
+
+    return broker.call('orders.create', order)
+      .then(({ _id: id }) => broker.call('orders.update', { id, orderTotal: 0.01 }))
+      .then((updatedOrder) => expect(updatedOrder.orderTotal).toBe(170))
+  })
+
+  it('do not allow to update order status when user is not authorized to list', () => {
+    expect.assertions(1)
 
     const basket = [
       { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
       { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
     ]
-    const additionalInfo = { address: 'Secret Street 123' }
-    const buyerEmail = 'example@example.com'
-    const order = { basket, additionalInfo, buyerEmail }
+    const order = { basket }
 
     return broker.call('orders.create', order)
-      .then((wholeOrder) => broker.call(
-        'orders.update',
-        { id: wholeOrder._id, buyerEmail: 'updated@example.com', status: 'updated' }
-      ).then((updatedOrder) => ({ wholeOrder, updatedOrder })))
-      .then(({ wholeOrder, updatedOrder }) => {
-        expect(updatedOrder).toEqual({
-          ...wholeOrder,
-          updatedAt: expect.any(Date),
-          buyerEmail: 'updated@example.com', status: 'updated'
-        })
-        return updatedOrder
+      .then(({ _id: id }) => broker.call('orders.update', { id, status: 'paid' }))
+      .then((updatedOrder) => expect(updatedOrder.status).toBe('created'))
+  })
+  
+  it('allow to update order status when user is authorized to list', () => {
+    expect.assertions(1)
+
+    const metaWithSuperAdminPrivileges = {
+      meta: { decodedToken: { privileges: ['superadmin'] } }
+    }
+    const basket = [
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
+    ]
+    const order = { basket }
+
+    return broker.call('orders.create', order)
+      .then(({ _id: id }) => broker.call('orders.update', { id, status: 'paid' }, metaWithSuperAdminPrivileges))
+      .then((updatedOrder) => expect(updatedOrder.status).toBe('paid'))
+  })
+
+  it('can save witch coupon is used', () => {
+    expect.assertions(1)
+
+    const basket = [  // total 150 + 20 = 170
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
+    ]
+    const coupon = 'COUPON50'
+    const order = { basket, coupon }
+
+    return broker.call('orders.create', order)
+      .then((newOrder) => expect(newOrder.coupon).toBe(coupon))
+  })
+
+  it('can calculate price from % coupon', () => {
+    expect.assertions(2)
+
+    const basket = [  // total 150 + 20 = 170
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
+    ]
+    const coupon = 'COUPON50'
+    const order = { basket, coupon }
+
+    return broker.call('orders.create', order)
+      .then((newOrder) => {
+        expect(newOrder.orderTotal).toBe(85)
+        expect(newOrder.discountAmount).toBe(85)
       })
-      .then((updatedOrder) => broker.call(
-        'orders.update',
-        { id: updatedOrder._id, buyerEmail: 'updated-x-2@example.com' }
-      ))
-      .catch((error) => expect(error.message).toBe('Only orders with "created" status can be updated!'))
+  })
+
+  it('can calculate price from % coupon with floating point', () => {
+    expect.assertions(2)
+
+    const basket = [  // total 150 + 20 = 170
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
+    ]
+    const coupon = 'COUPON1.33'
+    const order = { basket, coupon }
+
+    return broker.call('orders.create', order)
+      .then((newOrder) => {
+        expect(newOrder.orderTotal).toBe(167.74)
+        expect(newOrder.discountAmount).toBe(2.26)
+      })
+  })
+
+  it('can calculate price from  new coupon only when update', () => {
+    expect.assertions(2)
+
+    const basket = [  // total 150 + 20 = 170
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
+    ]
+    const coupon1 = 'COUPON50'
+    const coupon2 = 'COUPON1.33'
+    const order = { basket, coupon1 }
+
+    return broker.call('orders.create', order)
+      .then(({ _id: id }) => broker.call('orders.update', { id, coupon: coupon2 }))
+      .then((updatedOrder) => {
+        expect(updatedOrder.orderTotal).toBe(167.74)
+        expect(updatedOrder.discountAmount).toBe(2.26)
+      })
+  })
+
+  it('throws when coupon not find', () => {
+    expect.assertions(1)
+
+    const basket = [  // total 150 + 20 = 170
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
+    ]
+    const coupon = 'COUPONNOTEXISTING'
+    const order = { basket, coupon }
+
+    return broker.call('orders.create', order)
+      .catch((error) => expect(error.message).toBe('Coupon not found!'))
+  })
+
+  it('throws when coupon not active', () => {
+    expect.assertions(1)
+
+    const basket = [  // total 150 + 20 = 170
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
+    ]
+    const coupon = 'COUPONNOTACTIVE'
+    const order = { basket, coupon }
+
+    return broker.call('orders.create', order)
+      .catch((error) => expect(error.message).toBe('Coupon not active!'))
   })
 
 })

@@ -27,9 +27,15 @@ module.exports = {
     before: {
       create: [
         'addFirstStatus',
-        'calculateOrderTotal'
+        'calculateOrderTotal',
+        'applyCoupon',
       ],
-      update: 'onlyCreatedCanBeUpdated',
+      update: [
+        'removeOrderTotalFromUpdateParams',
+        'removeStatusFromUpdateParamsIfNotAuthorizedToFind',
+        'calculateOrderTotal',
+        'applyCoupon',
+      ]
     },
     after: {
       get: 'removeBuyerRelatedDataIfNotAuthorizedToFind'
@@ -56,7 +62,9 @@ module.exports = {
       'basket',
       'orderTotal',
       'status',
-      'additionalInfo'
+      'additionalInfo',
+      'coupon',
+      'discountAmount',
     ],
     entityValidator: {
       type: 'object',
@@ -92,7 +100,8 @@ module.exports = {
             consentData: { type: 'boolean' },
             consentRegulations: { type: 'boolean' },
           }
-        }
+        },
+        coupon: { type: 'string' }
       }
     },
     populates: {
@@ -160,13 +169,21 @@ module.exports = {
                 consentData: { type: 'boolean' },
                 consentRegulations: { type: 'boolean' },
               }
-            }
+            },
+            coupon: {
+              type: 'string',
+              options: await this.createOptionsFromService('coupons', 'name', 'name'),
+              uniforms: { component: 'MuiReactSelectField' },
+            },
+            discountAmount: { type: 'number', uniforms: { fullWidth: true, disabled: true } },
           }
         },
         icon: 'fas fa-shopping-basket',
         displayName: 'Orders',
         tableFields: [
           { label: 'Order total', name: 'orderTotal', columnRenderType: 'currency' },
+          { label: 'Discount amount', name: 'discountAmount', columnRenderType: 'currency' },
+          { label: 'Coupon', name: 'coupon', columnRenderType: 'chips' },
           { label: 'Status', name: 'status', columnRenderType: 'chips' },
           { label: 'Email', name: 'buyerEmail' },
           { label: 'Name', name: 'additionalInfo.name' },
@@ -224,32 +241,75 @@ module.exports = {
           return ctx
         })
     },
-    removeBuyerRelatedDataIfNotAuthorizedToFind(ctx, res) {
+    async applyCoupon(ctx) {
+      const actionName = ctx.action.rawName
+      const { coupon } = ctx.params
+
+      if (!coupon) return ctx
+
+      const [couponFromDb] = await this.broker.call('coupons.find', { query: { name: coupon } })
+      if (!couponFromDb) throw new Error('Coupon not found!')
+      const { active, percentDiscount } = couponFromDb
+
+      if (!active) throw new Error('Coupon not active!')
+      if (!percentDiscount) return ctx
+
+      const { orderTotal } = actionName === 'create' ?
+        ctx.params
+        :
+        await this.broker.call('orders.get', { id: ctx.params && ctx.params.id })
+
+      if (!orderTotal) throw new Error('Error processing order!')
+
+      const roundTo2Decimals = (price) => Math.round(price * 100) / 100
+      const decimalDiscount = percentDiscount / 100
+      const discountAmount = roundTo2Decimals(orderTotal * decimalDiscount)
+      const orderTotalAfterCoupon = orderTotal - discountAmount
+      const newOrderTotal = orderTotalAfterCoupon < 0 ? 0 : orderTotalAfterCoupon
+
+      ctx.params.discountAmount = discountAmount
+      ctx.params.orderTotal = newOrderTotal
+
+      return ctx
+    },
+    removeOrderTotalFromUpdateParams(ctx) {
+      if (ctx && ctx.params && ctx.params.orderTotal) {
+        delete ctx.params.orderTotal
+        return ctx
+      }
+      return ctx
+    },
+    checkIfIsAuthorizedToFind(ctx) {
       const privilegesToCheck = this.settings.requiredPrivileges.list
       const allPrivileges = this.getAllPrivileges(ctx)
       const matchedPrivileges = privilegesToCheck.filter(
         privilegeToCheck => allPrivileges.includes(privilegeToCheck)
       )
 
-      if (matchedPrivileges.length !== 0) {
-        return res
+      return matchedPrivileges.length !== 0
+    },
+    removeBuyerRelatedDataIfNotAuthorizedToFind(ctx, res) {
+      if (!this.checkIfIsAuthorizedToFind(ctx)) {
+        return this.removeFieldFromResponses('buyerEmail')(ctx,
+          this.removeFieldFromResponses('additionalInfo')(ctx, res)
+        )
       }
 
-      return this.removeFieldFromResponses('buyerEmail')(ctx,
-        this.removeFieldFromResponses('additionalInfo')(ctx, res)
-      )
+      return res
     },
-    async onlyCreatedCanBeUpdated(ctx) {
-      const { params: { id } } = ctx
-
-      const item = await this.broker.call('orders.get', { id })
-
-      if (item.status !== 'created') {
-        throw new Error('Only orders with "created" status can be updated!')
+    removeStatusFromUpdateParamsIfNotAuthorizedToFind(ctx) {
+      if (
+        ctx &&
+        ctx.params &&
+        ctx.params.status &&
+        !this.checkIfIsAuthorizedToFind(ctx)
+      ) {
+        delete ctx.params.status
+        return ctx
       }
 
       return ctx
-    }
+    },
   }
 
 }

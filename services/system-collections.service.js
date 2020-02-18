@@ -14,6 +14,7 @@ module.exports = {
       'groups',
       'privileges',
       'languages',
+      'coupons',
       'orders',
       'events',
       'events-log',
