@@ -252,7 +252,10 @@ module.exports = {
     async applyCoupon(ctx) {
       const { coupon } = ctx.params
 
-      if (!coupon) return ctx
+      if (!coupon) {
+        if(coupon === '') ctx.params.discountAmount = 0
+        return ctx
+      }
 
       const [couponFromDb] = await this.broker.call('coupons.find', { query: { name: coupon } })
       if (!couponFromDb) throw new Error('Coupon not found!')

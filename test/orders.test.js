@@ -327,6 +327,24 @@ describe('Test "orders" service', () => {
       })
   })
 
+  it('restore orderTotal and discountAmount after coupon is cleared', () => {
+    expect.assertions(2)
+
+    const basket = [  // total 150 + 20 = 170
+      { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
+      { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
+    ]
+    const coupon = 'COUPON50'
+    const order = { basket, coupon }
+
+    return broker.call('orders.create', order)
+      .then(({ _id: id }) => broker.call('orders.update', { id, coupon: '' }))
+      .then((updatedOrder) => {
+        expect(updatedOrder.orderTotal).toBe(170)
+        expect(updatedOrder.discountAmount).toBe(0)
+      })
+  })
+
   it('can calculate price from  new coupon only when update', () => {
     expect.assertions(2)
 
