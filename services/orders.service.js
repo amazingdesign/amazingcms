@@ -83,7 +83,6 @@ module.exports = {
             }
           },
         },
-        orderTotal: { type: 'number' },
         status: {
           type: 'string',
           options: ORDER_STATUSES_OPTIONS,
@@ -101,7 +100,9 @@ module.exports = {
             consentRegulations: { type: 'boolean' },
           }
         },
-        coupon: { type: 'string' }
+        coupon: { type: 'string' },
+        orderTotal: { type: 'number' },
+        discountAmount: { type: 'number' },
       }
     },
     populates: {
@@ -175,6 +176,7 @@ module.exports = {
               options: await this.createOptionsFromService('coupons', 'name', 'name'),
               uniforms: { component: 'MuiReactSelectField' },
             },
+            orderTotal: { type: 'number', uniforms: { fullWidth: true, disabled: true } },
             discountAmount: { type: 'number', uniforms: { fullWidth: true, disabled: true } },
           }
         },
@@ -209,8 +211,14 @@ module.exports = {
       ctx.params.status = 'created'
       return ctx
     },
-    calculateOrderTotal(ctx) {
-      const { basket } = ctx.params
+    async calculateOrderTotal(ctx) {
+      const actionName = ctx.action.rawName
+
+      // always recheck the basket for order total before discounts
+      const { basket } = actionName === 'create' ?
+        ctx.params
+        :
+        await this.broker.call('orders.get', { id: ctx.params && ctx.params.id })
 
       // it will fail on entity validation
       if (!basket || !Array.isArray(basket)) return ctx
@@ -242,7 +250,6 @@ module.exports = {
         })
     },
     async applyCoupon(ctx) {
-      const actionName = ctx.action.rawName
       const { coupon } = ctx.params
 
       if (!coupon) return ctx
@@ -254,12 +261,9 @@ module.exports = {
       if (!active) throw new Error('Coupon not active!')
       if (!percentDiscount) return ctx
 
-      const { orderTotal } = actionName === 'create' ?
-        ctx.params
-        :
-        await this.broker.call('orders.get', { id: ctx.params && ctx.params.id })
+      const { orderTotal } = ctx.params
 
-      if (!orderTotal) throw new Error('Error processing order!')
+      if (!orderTotal && orderTotal !== 0) throw new Error('Error processing order!')
 
       const roundTo2Decimals = (price) => Math.round(price * 100) / 100
       const decimalDiscount = percentDiscount / 100
