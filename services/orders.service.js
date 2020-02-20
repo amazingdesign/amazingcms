@@ -250,10 +250,22 @@ module.exports = {
         })
     },
     async applyCoupon(ctx) {
-      const { coupon } = ctx.params
+      const { id } = ctx.params
+      const couponIsInParams = ctx.params && (ctx.params.coupon || ctx.params.coupon === '')
+
+      // check coupon in db if there is no in params
+      const { coupon } = (
+        couponIsInParams ?
+          ctx.params
+          :
+          id ?
+            await this.broker.call('orders.get', { id })
+            :
+            {}
+      )
 
       if (!coupon) {
-        if(coupon === '') ctx.params.discountAmount = 0
+        if (coupon === '') ctx.params.discountAmount = 0
         return ctx
       }
 
