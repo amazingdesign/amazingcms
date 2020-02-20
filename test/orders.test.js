@@ -1,6 +1,7 @@
+/* eslint-disable max-lines */
 'use strict'
 
-const { ServiceBroker } = require('moleculer')
+const { ServiceBroker, Context } = require('moleculer')
 const Validator = require('moleculer-json-schema-validator')
 
 const OrdersService = require('../services/orders.service')
@@ -390,6 +391,38 @@ describe('Test "orders" service', () => {
 
     return broker.call('orders.create', order)
       .catch((error) => expect(error.message).toBe('Coupon not active!'))
+  })
+
+  it('redirect if redirect param is present', () => {
+    expect.assertions(1)
+
+    const TEST_REDIRECT_URL = 'https://google.com'
+    const basket = [{ id: '5dd679590d02f941837773ac', collectionName: 'products' },]
+    const ctx = new Context(broker)
+
+    return broker.call('orders.create', { basket, redirect: TEST_REDIRECT_URL }, ctx)
+      .then((order) => expect(ctx.meta.$location).toBe(TEST_REDIRECT_URL))
+  })
+
+  it('replace orderId in redirection', () => {
+    expect.assertions(1)
+
+    const TEST_REDIRECT_URL = 'https://google.com/{{orderId}}'
+    const basket = [{ id: '5dd679590d02f941837773ac', collectionName: 'products' },]
+    const ctx = new Context(broker)
+
+    return broker.call('orders.create', { basket, redirect: TEST_REDIRECT_URL }, ctx)
+      .then((order) => expect(ctx.meta.$location).toBe(TEST_REDIRECT_URL.replace('{{orderId}}', order._id)))
+  })
+
+  it('do not redirect if redirect param is not present', () => {
+    expect.assertions(1)
+
+    const basket = [{ id: '5dd679590d02f941837773ac', collectionName: 'products' },]
+    const ctx = new Context(broker)
+
+    return broker.call('orders.create', { basket,}, ctx)
+      .then((order) => expect(ctx.meta.$location).toBe(undefined))
   })
 
 })

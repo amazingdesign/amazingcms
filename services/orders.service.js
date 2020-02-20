@@ -2,9 +2,10 @@
 const DbService = require('../db/main')
 const DbMetadata = require('@bit/amazingdesign.moleculer.db-metadatamixin')
 const DbUtilsMixin = require('../bits/db-utilsmixin')
-
 const EventDispatcherMixin = require('../bits/event-dispatcher.mixin')
 const DbArchiveMixin = require('../bits/db-archive.mixin')
+
+const { replace } = require('@bit/amazingdesign.utils.variables-in-string')
 
 const PRODUCT_FIELDS = ['price', 'currency', 'name', 'photo', 'published', 'description']
 const ORDER_STATUSES = ['created', 'pending', 'paid', 'packed', 'shipped', 'received', 'done']
@@ -38,7 +39,9 @@ module.exports = {
       ]
     },
     after: {
-      get: 'removeBuyerRelatedDataIfNotAuthorizedToFind'
+      get: 'removeBuyerRelatedDataIfNotAuthorizedToFind',
+      create: 'redirect',
+      update: 'redirect',
     }
   },
 
@@ -273,9 +276,6 @@ module.exports = {
       if (!couponFromDb) throw new Error('Coupon not found!')
       const { active, percentDiscount } = couponFromDb
 
-      this.logger.warn('$$$$$$$$$$$$$$$$$$$$$$$$$$$')
-      this.logger.warn(active)
-
       if (!active || active === 'false') throw new Error('Coupon not active!')
       if (!percentDiscount) return ctx
 
@@ -337,6 +337,16 @@ module.exports = {
 
       return ctx
     },
+    redirect(ctx, res) {
+      if (ctx.params && !ctx.params.redirect) return res
+
+      const { _id: orderId } = res
+
+      ctx.meta.$statusCode = 302
+      ctx.meta.$location = replace(ctx.params.redirect, { orderId })
+
+      return res
+    }
   }
 
 }
