@@ -292,6 +292,7 @@ module.exports = {
       return ctx
     },
     removeOrderTotalFromUpdateParams(ctx) {
+      // do not check meta - should be always removed
       if (ctx && ctx.params && ctx.params.orderTotal) {
         delete ctx.params.orderTotal
         return ctx
@@ -308,6 +309,8 @@ module.exports = {
       return matchedPrivileges.length !== 0
     },
     removeBuyerRelatedDataIfNotAuthorizedToFind(ctx, res) {
+      if (ctx.meta && !ctx.meta.calledByApi) return res
+
       if (!this.checkIfIsAuthorizedToFind(ctx)) {
         return this.removeFieldFromResponses('buyerEmail')(ctx,
           this.removeFieldFromResponses('additionalInfo')(ctx, res)
@@ -317,6 +320,8 @@ module.exports = {
       return res
     },
     removeStatusFromUpdateParamsIfNotAuthorizedToFind(ctx) {
+      if (ctx.meta && !ctx.meta.calledByApi) return ctx
+
       if (
         ctx &&
         ctx.params &&

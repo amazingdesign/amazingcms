@@ -202,7 +202,7 @@ describe('Test "orders" service', () => {
 
     return broker.call('orders.create', { basket, additionalInfo, buyerEmail })
       .then((wholeOrder) => {
-        return broker.call('orders.get', { id: wholeOrder._id })
+        return broker.call('orders.get', { id: wholeOrder._id }, { meta: { calledByApi: true } })
           .then((orderFromGet) => (
             expect(orderFromGet).toEqual({
               ...wholeOrder,
@@ -217,7 +217,7 @@ describe('Test "orders" service', () => {
     expect.assertions(1)
 
     const metaWithSuperAdminPrivileges = {
-      meta: { decodedToken: { privileges: ['superadmin'] } }
+      meta: { calledByApi: true, decodedToken: { privileges: ['superadmin'] } }
     }
 
     const basket = [
@@ -234,7 +234,7 @@ describe('Test "orders" service', () => {
       })
   })
 
-  it('do not allow to update order total through API update call', () => {
+  it('do not allow to update order total', () => {
     expect.assertions(1)
 
     const basket = [  // total 150 + 20 = 170
@@ -258,10 +258,10 @@ describe('Test "orders" service', () => {
     const order = { basket }
 
     return broker.call('orders.create', order)
-      .then(({ _id: id }) => broker.call('orders.update', { id, status: 'paid' }))
+      .then(({ _id: id }) => broker.call('orders.update', { id, status: 'paid' }, { meta: { calledByApi: true } }))
       .then((updatedOrder) => expect(updatedOrder.status).toBe('created'))
   })
-  
+
   it('allow to update order status when user is authorized to list', () => {
     expect.assertions(1)
 

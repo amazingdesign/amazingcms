@@ -115,8 +115,6 @@ module.exports = {
       const { clientIp } = ctx.meta
       const { params } = ctx
 
-      this.logger.info(params)
-
       const secureIps = [
         '195.149.229.109',
         '148.251.96.163',
