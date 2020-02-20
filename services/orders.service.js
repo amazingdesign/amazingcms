@@ -273,7 +273,10 @@ module.exports = {
       if (!couponFromDb) throw new Error('Coupon not found!')
       const { active, percentDiscount } = couponFromDb
 
-      if (!active) throw new Error('Coupon not active!')
+      this.logger.warn('$$$$$$$$$$$$$$$$$$$$$$$$$$$')
+      this.logger.warn(active)
+
+      if (!active || active === 'false') throw new Error('Coupon not active!')
       if (!percentDiscount) return ctx
 
       const { orderTotal } = ctx.params
