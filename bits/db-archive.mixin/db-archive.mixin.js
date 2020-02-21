@@ -76,7 +76,7 @@ module.exports = {
         // @HACK must check calledByApi because before remove call
         // is get call (probably by hook in moleculer-db) and it will
         // fail here when calling remove to unarchive already archived item
-        if (item._archived && ctx.meta.calledByApi) {
+        if (item && item._archived && ctx.meta.calledByApi) {
           throw new WebErrors.NotFoundError()
         }
       }

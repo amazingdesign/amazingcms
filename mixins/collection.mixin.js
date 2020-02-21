@@ -76,8 +76,10 @@ const makeCollectionService = collectionData => {
           actionName: ctx.action.rawName,
           serviceName: ctx.action.name.split('.')[0],
           ctxParams: JSON.parse(JSON.stringify(ctx.params)),
+          ctxMeta: JSON.parse(JSON.stringify(ctx.meta)),
         })
-
+        
+        return script.runInContext(context)
       },
     }
   }
