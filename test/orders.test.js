@@ -421,8 +421,40 @@ describe('Test "orders" service', () => {
     const basket = [{ id: '5dd679590d02f941837773ac', collectionName: 'products' },]
     const ctx = new Context(broker)
 
-    return broker.call('orders.create', { basket,}, ctx)
+    return broker.call('orders.create', { basket, }, ctx)
       .then((order) => expect(ctx.meta.$location).toBe(undefined))
+  })
+
+  it('replace buyerEmail in redirection', () => {
+    expect.assertions(1)
+
+    const TEST_BUYER_EMAIL = 'example@example.com'
+    const TEST_REDIRECT_URL = 'https://google.com/{{buyerEmail}}'
+    const basket = [{ id: '5dd679590d02f941837773ac', collectionName: 'products' },]
+    const ctx = new Context(broker)
+
+    return broker.call('orders.create', { basket, buyerEmail: TEST_BUYER_EMAIL, redirect: TEST_REDIRECT_URL }, ctx)
+      .then((order) => (
+        expect(ctx.meta.$location).toBe(TEST_REDIRECT_URL.replace('{{buyerEmail}}', TEST_BUYER_EMAIL))
+      ))
+  })
+
+  it('replace buyerEmail and orderId in redirection', () => {
+    expect.assertions(1)
+
+    const TEST_BUYER_EMAIL = 'example@example.com'
+    const TEST_REDIRECT_URL = 'https://google.com/{{orderId}}?buyerEmail={{buyerEmail}}'
+    const basket = [{ id: '5dd679590d02f941837773ac', collectionName: 'products' },]
+    const ctx = new Context(broker)
+
+    return broker.call('orders.create', { basket, buyerEmail: TEST_BUYER_EMAIL, redirect: TEST_REDIRECT_URL }, ctx)
+      .then((order) => (
+        expect(ctx.meta.$location).toBe(
+          TEST_REDIRECT_URL
+            .replace('{{orderId}}', order._id)
+            .replace('{{buyerEmail}}', TEST_BUYER_EMAIL)
+        )
+      ))
   })
 
 })

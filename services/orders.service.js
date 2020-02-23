@@ -71,7 +71,7 @@ module.exports = {
     ],
     entityValidator: {
       type: 'object',
-      required: ['basket', 'orderTotal', 'status', 'buyerEmail'],
+      required: ['basket', 'orderTotal', 'status'],
       properties: {
         buyerEmail: { type: 'string', format: 'email' },
         basket: {
@@ -340,10 +340,10 @@ module.exports = {
     redirect(ctx, res) {
       if (ctx.params && !ctx.params.redirect) return res
 
-      const { _id: orderId } = res
+      const { _id: orderId, buyerEmail } = res
 
       ctx.meta.$statusCode = 302
-      ctx.meta.$location = replace(ctx.params.redirect, { orderId })
+      ctx.meta.$location = replace(ctx.params.redirect, { orderId, buyerEmail })
 
       return res
     }
