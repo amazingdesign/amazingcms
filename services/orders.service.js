@@ -71,7 +71,7 @@ module.exports = {
     ],
     entityValidator: {
       type: 'object',
-      required: ['basket', 'orderTotal', 'status'],
+      required: ['basket', 'orderTotal', 'status', 'buyerEmail'],
       properties: {
         buyerEmail: { type: 'string', format: 'email' },
         basket: {

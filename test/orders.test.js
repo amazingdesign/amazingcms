@@ -77,6 +77,8 @@ describe('Test "orders" service', () => {
   beforeAll(() => broker.start())
   afterAll(() => broker.stop())
 
+  const buyerEmail = 'example@example.com'
+
   it('can calculate orderTotal for 1-item basket', () => {
     expect.assertions(1)
 
@@ -84,7 +86,7 @@ describe('Test "orders" service', () => {
       { id: '5dd679590d02f941837773ac', collectionName: 'products' },
     ]
 
-    return broker.call('orders.create', { basket })
+    return broker.call('orders.create', { basket, buyerEmail })
       .then(order => expect(order.orderTotal).toBe(1000))
   })
 
@@ -96,7 +98,7 @@ describe('Test "orders" service', () => {
       { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
     ]
 
-    return broker.call('orders.create', { basket })
+    return broker.call('orders.create', { basket, buyerEmail })
       .then(order => expect(order.orderTotal).toBe(1150))
   })
 
@@ -105,7 +107,7 @@ describe('Test "orders" service', () => {
 
     const basket = []
 
-    return broker.call('orders.create', { basket })
+    return broker.call('orders.create', { basket, buyerEmail })
       .then(order => expect(order.orderTotal).toBe(0))
   })
 
@@ -116,7 +118,7 @@ describe('Test "orders" service', () => {
       { id: '5dd679590d02f941837773ac', collectionName: 'products', quantity: 3 },
     ]
 
-    return broker.call('orders.create', { basket })
+    return broker.call('orders.create', { basket, buyerEmail })
       .then(order => expect(order.orderTotal).toBe(3000))
   })
 
@@ -128,7 +130,7 @@ describe('Test "orders" service', () => {
       { id: '5dd65b0a0d02f941837773aa', collectionName: 'products', quantity: 20 },
     ]
 
-    return broker.call('orders.create', { basket })
+    return broker.call('orders.create', { basket, buyerEmail })
       .then(order => expect(order.orderTotal).toBe(6000))
   })
 
@@ -139,7 +141,7 @@ describe('Test "orders" service', () => {
       { id: '5dd679590d02f941837773cc', collectionName: 'products', quantity: 20 },
     ]
 
-    return broker.call('orders.create', { basket })
+    return broker.call('orders.create', { basket, buyerEmail })
       .then(order => expect(order.orderTotal).toBe(0))
   })
 
@@ -151,7 +153,7 @@ describe('Test "orders" service', () => {
       { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
     ]
 
-    return broker.call('orders.create', { basket })
+    return broker.call('orders.create', { basket, buyerEmail })
       .then(order => expect(order.orderTotal).toBe(170))
   })
 
@@ -163,7 +165,7 @@ describe('Test "orders" service', () => {
       { id: '5dd679590d02f941837773ac', collectionName: 'products' },
     ]
 
-    return broker.call('orders.create', { basket })
+    return broker.call('orders.create', { basket, buyerEmail })
       .then(({ _id }) => broker.call('orders.get', { id: _id, populate: ['basket'] }))
       .then((order) => (
         expect(order.basket).toEqual([
@@ -181,7 +183,7 @@ describe('Test "orders" service', () => {
       { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
     ]
 
-    return broker.call('orders.create', { basket })
+    return broker.call('orders.create', { basket, buyerEmail })
       .then(({ _id }) => broker.call('orders.get', { id: _id, populate: ['basket'] }))
       .then((order) => (
         expect(order.basket).toEqual([
@@ -242,7 +244,7 @@ describe('Test "orders" service', () => {
       { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
       { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
     ]
-    const order = { basket }
+    const order = { basket, buyerEmail }
 
     return broker.call('orders.create', order)
       .then(({ _id: id }) => broker.call('orders.update', { id, orderTotal: 0.01 }))
@@ -256,7 +258,7 @@ describe('Test "orders" service', () => {
       { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
       { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
     ]
-    const order = { basket }
+    const order = { basket, buyerEmail }
 
     return broker.call('orders.create', order)
       .then(({ _id: id }) => broker.call('orders.update', { id, status: 'paid' }, { meta: { calledByApi: true } }))
@@ -273,7 +275,7 @@ describe('Test "orders" service', () => {
       { id: '5dd65b0a0d02f941837773aa', collectionName: 'products' },
       { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
     ]
-    const order = { basket }
+    const order = { basket, buyerEmail }
 
     return broker.call('orders.create', order)
       .then(({ _id: id }) => broker.call('orders.update', { id, status: 'paid' }, metaWithSuperAdminPrivileges))
@@ -288,7 +290,7 @@ describe('Test "orders" service', () => {
       { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
     ]
     const coupon = 'COUPON50'
-    const order = { basket, coupon }
+    const order = { basket, coupon, buyerEmail }
 
     return broker.call('orders.create', order)
       .then((newOrder) => expect(newOrder.coupon).toBe(coupon))
@@ -302,7 +304,7 @@ describe('Test "orders" service', () => {
       { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
     ]
     const coupon = 'COUPON50'
-    const order = { basket, coupon }
+    const order = { basket, coupon, buyerEmail }
 
     return broker.call('orders.create', order)
       .then((newOrder) => {
@@ -319,7 +321,7 @@ describe('Test "orders" service', () => {
       { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
     ]
     const coupon = 'COUPON1.33'
-    const order = { basket, coupon }
+    const order = { basket, coupon, buyerEmail }
 
     return broker.call('orders.create', order)
       .then((newOrder) => {
@@ -336,7 +338,7 @@ describe('Test "orders" service', () => {
       { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
     ]
     const coupon = 'COUPON50'
-    const order = { basket, coupon }
+    const order = { basket, coupon, buyerEmail }
 
     return broker.call('orders.create', order)
       .then(({ _id: id }) => broker.call('orders.update', { id, coupon: '' }))
@@ -355,7 +357,7 @@ describe('Test "orders" service', () => {
     ]
     const coupon1 = 'COUPON50'
     const coupon2 = 'COUPON1.33'
-    const order = { basket, coupon1 }
+    const order = { basket, coupon1, buyerEmail }
 
     return broker.call('orders.create', order)
       .then(({ _id: id }) => broker.call('orders.update', { id, coupon: coupon2 }))
@@ -373,7 +375,7 @@ describe('Test "orders" service', () => {
       { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
     ]
     const coupon = 'COUPONNOTEXISTING'
-    const order = { basket, coupon }
+    const order = { basket, coupon, buyerEmail }
 
     return broker.call('orders.create', order)
       .catch((error) => expect(error.message).toBe('Coupon not found!'))
@@ -387,7 +389,7 @@ describe('Test "orders" service', () => {
       { id: '5d7e6a5542dee364294cff2c', collectionName: 'books', quantity: 1 },
     ]
     const coupon = 'COUPONNOTACTIVE'
-    const order = { basket, coupon }
+    const order = { basket, coupon, buyerEmail }
 
     return broker.call('orders.create', order)
       .catch((error) => expect(error.message).toBe('Coupon not active!'))
@@ -400,7 +402,7 @@ describe('Test "orders" service', () => {
     const basket = [{ id: '5dd679590d02f941837773ac', collectionName: 'products' },]
     const ctx = new Context(broker)
 
-    return broker.call('orders.create', { basket, redirect: TEST_REDIRECT_URL }, ctx)
+    return broker.call('orders.create', { basket, redirect: TEST_REDIRECT_URL, buyerEmail }, ctx)
       .then((order) => expect(ctx.meta.$location).toBe(TEST_REDIRECT_URL))
   })
 
@@ -411,7 +413,7 @@ describe('Test "orders" service', () => {
     const basket = [{ id: '5dd679590d02f941837773ac', collectionName: 'products' },]
     const ctx = new Context(broker)
 
-    return broker.call('orders.create', { basket, redirect: TEST_REDIRECT_URL }, ctx)
+    return broker.call('orders.create', { basket, redirect: TEST_REDIRECT_URL, buyerEmail }, ctx)
       .then((order) => expect(ctx.meta.$location).toBe(TEST_REDIRECT_URL.replace('{{orderId}}', order._id)))
   })
 
@@ -421,7 +423,7 @@ describe('Test "orders" service', () => {
     const basket = [{ id: '5dd679590d02f941837773ac', collectionName: 'products' },]
     const ctx = new Context(broker)
 
-    return broker.call('orders.create', { basket, }, ctx)
+    return broker.call('orders.create', { basket, buyerEmail }, ctx)
       .then((order) => expect(ctx.meta.$location).toBe(undefined))
   })
 

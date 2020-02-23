@@ -15,7 +15,7 @@ const OrdersService = require('../services/orders.service')
 const PaymentsService = require('../services/payments.service')
 
 
-describe('Test "orders" service', () => {
+describe('Test "payments" service', () => {
   const mockProducts = {
     '5dd679590d02f941837773ac': { name: 'Phone', price: 1000 },
     '5dd65b0a0d02f941837773aa': { name: 'Mouse', price: 150 },
@@ -62,7 +62,7 @@ describe('Test "orders" service', () => {
       { id: '5dd679590d02f941837773cc', collectionName: 'products', quantity: 3 },
     ]
 
-    return broker.call('orders.create', { basket })
+    return broker.call('orders.create', { basket, buyerEmail: 'example@example.com' })
       .then((order) => {
         expect(order.orderTotal).toBe(0)
         return order
