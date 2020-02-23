@@ -1,6 +1,6 @@
 {
   "name": "amazingcms",
-  "version": "1.9.8",
+  "version": "1.9.9",
   "description": "Amazing CMS",
   "scripts": {
     "dev": "moleculer-runner --env --repl --hot services",
