@@ -10,6 +10,7 @@ module.exports = {
     'coupons.find',
     'coupons.get',
     'coupons.create',
+    'coupons.remove',
     'coupons.update',
   ],
   bodyParsers: {

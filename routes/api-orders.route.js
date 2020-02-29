@@ -10,6 +10,7 @@ module.exports = {
     'orders.find',
     'orders.get',
     'orders.create',
+    'orders.remove',
     'orders.update',
   ],
   bodyParsers: {
