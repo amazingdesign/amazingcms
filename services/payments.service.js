@@ -43,9 +43,9 @@ module.exports = {
 
       if (!orderId) throw Error('You must specify orderId!')
 
-      const mergedSettings = { ...this.settings, ...settings }
+      const { orderTotal: amount, paymentSettings } = await this.broker.call('orders.get', { id: orderId })
 
-      const { orderTotal: amount } = await this.broker.call('orders.get', { id: orderId })
+      const mergedSettings = { ...this.settings, ...paymentSettings, ...settings }
 
       if (amount === 0) {
         await this.makeOrderPaid(orderId)

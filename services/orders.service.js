@@ -66,6 +66,7 @@ module.exports = {
       'orderTotal',
       'status',
       'additionalInfo',
+      'paymentSettings',
       'coupon',
       'discountAmount',
     ],
@@ -102,6 +103,12 @@ module.exports = {
             consentData: { type: 'boolean' },
             consentRegulations: { type: 'boolean' },
           }
+        },
+        paymentSettings: {
+          type: 'object',
+          properties: {
+            returnURLSuccess: { type: 'string', format: 'uri' },
+          },
         },
         coupon: { type: 'string' },
         orderTotal: { type: 'number' },
@@ -173,6 +180,12 @@ module.exports = {
                 consentData: { type: 'boolean' },
                 consentRegulations: { type: 'boolean' },
               }
+            },
+            paymentSettings: {
+              type: 'object',
+              properties: {
+                returnURLSuccess: { type: 'string', format: 'uri' },
+              },
             },
             coupon: {
               type: 'string',
