@@ -34,10 +34,11 @@ module.exports = {
   settings: {
     requiredPrivileges: {
       webhooks: [],
-      createUploadUrl: ['superadmin', 'admin', 'writter'],
-      get: ['superadmin', 'admin', 'writter'],
-      list: ['superadmin', 'admin', 'writter'],
-      getSchema: ['superadmin', 'admin', 'writter'],
+      _displayInAdmin: ['superadmin', 'admin', 'writter', 'writer-mux'],
+      createUploadUrl: ['superadmin', 'admin', 'writter', 'writer-mux'],
+      get: ['superadmin', 'admin', 'writter', 'writer-mux'],
+      list: ['superadmin', 'admin', 'writter', 'writer-mux'],
+      getSchema: ['superadmin', 'admin', 'writter', 'writer-mux'],
       update: ['$NONE'],
       create: ['$NONE'],
       remove: ['$NONE'],
