@@ -14,8 +14,8 @@ module.exports = {
     'users.update',
   ],
   bodyParsers: {
-    json: true,
-    urlencoded: { extended: true }
+    json: { limit: '5MB' },
+    urlencoded: { extended: true, limit: '5MB' }
   },
   callOptions: {
     meta: {
