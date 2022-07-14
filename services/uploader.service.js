@@ -174,6 +174,10 @@ module.exports = {
           DbService,
           DbUtilsMixin,
         ],
+
+        settings: {
+          maxPageSize: Number.MAX_SAFE_INTEGER
+        }
       })
 
       return this.broker.waitForServices(serviceName)
